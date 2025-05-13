@@ -21,6 +21,8 @@ import AlcoholAndSubstance from './Screens/AlcoholAndSubstance';
 import SeizureTrackingS from './Screens/SeizureTracking';
 import NoSeizure from './Screens/NoSeizure';
 import MentalHealth from './Screens/MentalHealth';
+import Seizure from './Screens/Seziure';
+import YesSeizure from './Screens/YesSeizure';
 import Signuptwo from './Screens/Signuptwo';
 
 const Stack = createStackNavigator();
@@ -30,19 +32,21 @@ export default function App() {
     <SafeAreaProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="MenstrualCycleS" component={MenstrualCycleS} />
-          <Stack.Screen name="SignupScreen" component={SignupScreen} />
-          <Stack.Screen name="AlcoholAndSubstance" component={AlcoholAndSubstance} />
-          <Stack.Screen name="Step7" component={Step7} />
-          <Stack.Screen name="Signuptwo" component={Signuptwo} />
-          <Stack.Screen name="Login1" component={Login1} />
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
-          <Stack.Screen name="MentalHealth" component={MentalHealth} />
+          <Stack.Screen name="Login1" component={Login1} />
+          <Stack.Screen name="MenstrualCycleS" component={MenstrualCycleS} />
+          <Stack.Screen name="YesSeizure" component={YesSeizure} />
           <Stack.Screen name="Signup3" component={Signup3} />
-          <Stack.Screen name="NoSeizure" component={NoSeizure} />
+          <Stack.Screen name="SignupScreen" component={SignupScreen} />
           <Stack.Screen name="PhysicalActivityS" component={PhysicalActivityS} />
           <Stack.Screen name="FoodandDietS" component={FoodandDietS} />
           <Stack.Screen name="MedicationAdherenceS" component={MedicationAdherenceS} />
+          <Stack.Screen name="MentalHealth" component={MentalHealth} />
+          <Stack.Screen name="AlcoholAndSubstance" component={AlcoholAndSubstance} />
+          <Stack.Screen name="Signuptwo" component={Signuptwo} />
+          <Stack.Screen name="Step7" component={Step7} />
+          <Stack.Screen name="NoSeizure" component={NoSeizure} />
+          <Stack.Screen name="Seizure" component={Seizure} />
           <Stack.Screen name="SeizureTrackingS" component={SeizureTrackingS} />
         </Stack.Navigator>
       </NavigationContainer>

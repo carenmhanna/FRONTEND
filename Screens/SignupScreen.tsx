@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ScrollView,
   StyleSheet,
   Text,
   View,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
@@ -16,7 +15,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigationProp } from '../types';
-import NextSignUp from './NextSignUp';
+import PhoneInput from 'react-native-phone-number-input';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,9 +23,33 @@ const SignupScreen = () => {
   const navigation = useNavigation<AuthNavigationProp>();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
-  const [nb, setNb] = useState('');
+  const [lastname, setlastName] = useState('');
   const [pass, setPass] = useState('');
   const [isPasswordHidden, setIsPasswordHidden] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [formattedValue, setFormattedValue] = useState('');
+  const phoneInput = useRef<PhoneInput>(null);
+
+  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const allFieldsValid =
+    name &&
+    lastname &&
+    pass &&
+    email &&
+    phoneInput.current?.isValidNumber(phoneNumber) &&
+    isValidEmail(email);
+
+  const handleNext = () => {
+    if (!allFieldsValid) {
+      alert('Please fill in all fields with valid information.');
+      return;
+    }
+
+    console.log('Email:', email);
+    console.log('Phone:', formattedValue);
+    navigation.navigate('Signuptwo');
+  };
 
   return (
     <KeyboardAvoidingView
@@ -46,42 +69,34 @@ const SignupScreen = () => {
                   style={styles.icon}
                 />
               </TouchableOpacity>
-              <Text style={[styles.text, { fontSize: width * 0.08 }]}>
-                New Account
-              </Text>
+              <Text style={[styles.text, { fontSize: width * 0.08 }]}>New Account</Text>
             </View>
 
             <View style={styles.bar}>
-              <Image
-                source={require('./Signuppics/one.png')}
-                style={styles.stepImage}
-              />
-              <Image
-                source={require('./Signuppics/line.png')}
-                style={styles.stepLine}
-              />
-              <Image
-                source={require('./Signuppics/two.png')}
-                style={styles.stepImage}
-              />
-              <Image
-                source={require('./Signuppics/line.png')}
-                style={styles.stepLine}
-              />
-              <Image
-                source={require('./Signuppics/three.png')}
-                style={styles.stepImage}
-              />
+              <Image source={require('./Signuppics/one.png')} style={styles.stepImage} />
+              <Image source={require('./Signuppics/line.png')} style={styles.stepLine} />
+              <Image source={require('./Signuppics/two.png')} style={styles.stepImage} />
+              <Image source={require('./Signuppics/line.png')} style={styles.stepLine} />
+              <Image source={require('./Signuppics/three.png')} style={styles.stepImage} />
             </View>
 
             <View style={styles.formContainer}>
-              <Text style={styles.label}>Full Name</Text>
+              <Text style={styles.label}>First Name</Text>
               <TextInput
                 style={[styles.input, { width: width * 0.9 }]}
-                placeholder="Enter your full name"
+                placeholder="Enter your name"
                 placeholderTextColor="#CA7FEB"
                 value={name}
                 onChangeText={setName}
+              />
+
+              <Text style={styles.label}>Last Name</Text>
+              <TextInput
+                style={[styles.input, { width: width * 0.9 }]}
+                placeholder="Enter your last name"
+                placeholderTextColor="#CA7FEB"
+                value={lastname}
+                onChangeText={setlastName}
               />
 
               <Text style={styles.label}>Password</Text>
@@ -99,7 +114,11 @@ const SignupScreen = () => {
                   onPress={() => setIsPasswordHidden(!isPasswordHidden)}
                 >
                   <Image
-                    source={require('./Signuppics/eye.png')}
+                    source={
+                      isPasswordHidden
+                        ? require('./Signuppics/eye.png')
+                        : require('./Signuppics/eyeon.webp')
+                    }
                     style={styles.icon}
                   />
                 </TouchableOpacity>
@@ -116,23 +135,26 @@ const SignupScreen = () => {
               />
 
               <Text style={styles.label}>Mobile Number</Text>
-              <TextInput
-                style={[styles.input, { width: width * 0.9 }]}
-                placeholder="Enter your mobile number"
-                placeholderTextColor="#CA7FEB"
-                keyboardType="phone-pad"
-                value={nb}
-                onChangeText={setNb}
+              <PhoneInput
+                ref={phoneInput}
+                defaultValue={phoneNumber}
+                defaultCode="US"
+                layout="first"
+                onChangeText={setPhoneNumber}
+                onChangeFormattedText={setFormattedValue}
+                containerStyle={{
+                  backgroundColor: '#EABAFF',
+                  borderRadius: 20,
+                  width: width * 0.9,
+                  marginBottom: 10,
+                }}
+                textContainerStyle={{
+                  backgroundColor: '#EABAFF',
+                  borderRadius: 20,
+                }}
               />
 
-              <View
-                style={{
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginTop: height * 0.05,
-                }}
-              >
+              <View style={styles.termsContainer}>
                 <Text style={styles.termsText}>By continuing, you agree to </Text>
                 <View style={styles.termsRow}>
                   <TouchableOpacity>
@@ -144,22 +166,27 @@ const SignupScreen = () => {
                   </TouchableOpacity>
                 </View>
 
-                <View
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    width: '100%',
-                  }}
+                <TouchableOpacity
+                  onPress={handleNext}
+                  disabled={!allFieldsValid}
+                  style={[
+                    styles.nextButton,
+                    {
+                      backgroundColor: allFieldsValid ? '#6B2A88' : '#CA7FEB99',
+                    },
+                  ]}
                 >
-                  <NextSignUp name={name} nb={nb} email={email} pass={pass} />
-                </View>
+                  <Text style={styles.nextText}>Next</Text>
+                </TouchableOpacity>
               </View>
+
+              <View style={{ height: 100 }} />
             </View>
           </ScrollView>
 
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Signuptwo')}>
               <Text style={styles.signup}>Log In</Text>
             </TouchableOpacity>
           </View>
@@ -178,7 +205,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: height * 0.08, // Increased spacing from top
+    marginTop: height * 0.08,
     marginBottom: height * 0.04,
     position: 'relative',
   },
@@ -196,7 +223,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     marginBottom: 40,
-    height: height * 0.08, // Increased height for visual balance
+    height: height * 0.08,
   },
   formContainer: {
     width: '100%',
@@ -222,6 +249,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 10,
   },
+  termsContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: height * 0.05,
+  },
   termsText: {
     color: '#666',
   },
@@ -232,6 +265,18 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#6B2A88',
     fontWeight: '500',
+  },
+  nextButton: {
+    paddingVertical: 15,
+    borderRadius: 30,
+    width: width * 0.7,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  nextText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
   loginContainer: {
     position: 'absolute',

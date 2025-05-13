@@ -13,6 +13,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ setSelectedOptions })
   const [modalVisible, setModalVisible] = useState(false);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [selectedOptions, setSelectedOptionsLocal] = useState<string[]>([]);
+  const [missedDosesQuantityOnly, setMissedDosesQuantityOnly] = useState<number>(1);
 
   const toggleSelection = (option: string) => {
     if (selectedOptions.includes(option)) {
@@ -31,6 +32,11 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ setSelectedOptions })
   const clearSelection = () => {
     setSelectedOptionsLocal([]);
     setSelectedOptions([]); // Clear parent state
+  };
+
+  const handleSave = (data: any) => {
+    console.log("Saved modal data:", data);
+    setModalVisible(false);
   };
 
   return (
@@ -92,7 +98,14 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ setSelectedOptions })
         </View>
       )}
 
-      <CenteredModal isVisible={modalVisible} onClose={() => setModalVisible(false)} />
+      <CenteredModal
+  isVisible={modalVisible}
+  onClose={() => setModalVisible(false)}
+  onSave={handleSave}
+  missedDosesQuantityOnly={missedDosesQuantityOnly}
+  missedDosesPills={selectedOptions.length} // this is a number
+/>
+
     </View>
   );
 };

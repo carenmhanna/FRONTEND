@@ -3,10 +3,10 @@ import { StyleSheet, View, SafeAreaView, Image, TouchableOpacity, Platform } fro
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigationProp } from '../types';
 import MyCalendar from './MyCalendar';
-import NoSeizures from './NoSeizures';
+import SeizureComp from './SeizureComp';
 import Bottombar from './Bottombar';
 
-const Login1 = () => {
+const YesSeizure = () => {
     const navigation = useNavigation<AuthNavigationProp>();  
 
     return (
@@ -15,7 +15,7 @@ const Login1 = () => {
             }} />
 
             <View style={styles.seizureContainer}>
-                <NoSeizures />
+                <SeizureComp />
             </View>
 
 
@@ -53,4 +53,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Login1;
+export default YesSeizure;

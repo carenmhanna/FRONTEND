@@ -6,14 +6,15 @@ import { AuthNavigationProp } from '../types';
 interface NextProps {
     email:string;
     name:string;
+    lastname:string;
     nb:string;
     pass:string;
 }
 
-const NextSignUp: React.FC<NextProps> = ({ email,name,nb,pass }) => {
+const NextSignUp: React.FC<NextProps> = ({ email,name,nb,pass,lastname }) => {
   const navigation = useNavigation<AuthNavigationProp>();
 
-  const isButtonDisabled = !(email && nb && name && pass); // All fields must be non-empty
+  const isButtonDisabled = !(email && nb && name && pass &&lastname); // All fields must be non-empty
 
   return (
     <TouchableOpacity

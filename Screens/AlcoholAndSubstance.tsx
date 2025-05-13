@@ -182,7 +182,13 @@ const handleEdit = (index: number) => {
       <RoundRadioButtons
         options={['Yes', 'No']}
         selectedOption={stateValue}
-        onSelect={setStateValue}
+        onSelect={(value) => {
+  setStateValue(value);
+  if (value === 'No') {
+    setDetails([]); // Efface les entrées si "No" est sélectionné
+  }
+}}
+
       />
       <PlusIcon
         onPress={() => {

@@ -1,23 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
 type NumberBoxProps = {
-  option: string;  // Pass the option (e.g., 'Wine', 'Beer') as a prop
-  onSave: (quantity: number, option: string) => void; // Callback to save the number and option
+  option: string;
+  onSave: (quantity: number, option: string) => void;
+  initialValue?: number; // Optional prop
 };
 
-const NumberBox: React.FC<NumberBoxProps> = ({ option, onSave }) => {
-  const [value, setValue] = useState(0);
+const NumberBox: React.FC<NumberBoxProps> = ({ option, onSave, initialValue }) => {
+  const [value, setValue] = useState(initialValue ?? 0); // fallback to 0
+
+  useEffect(() => {
+    if (initialValue !== undefined) {
+      setValue(initialValue);
+    }
+  }, [initialValue]);
 
   const increment = () => {
-    setValue(value + 1);
-    onSave(value + 1, option); // Save the new value and option
+    const newVal = value + 1;
+    setValue(newVal);
+    onSave(newVal, option);
   };
 
   const decrement = () => {
     if (value > 0) {
-      setValue(value - 1);
-      onSave(value - 1, option); // Save the new value and option
+      const newVal = value - 1;
+      setValue(newVal);
+      onSave(newVal, option);
     }
   };
 
@@ -46,8 +55,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    height: 20,  // Reduced size to ensure proper fit
-    width: 20,   // Reduced size to ensure proper fit
+    height: 20,
+    width: 20,
   },
   box: {
     backgroundColor: '#EABAFF',
@@ -55,7 +64,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 10,  // Added padding to create space between elements
+    paddingHorizontal: 10,
   },
   numberBox: {
     borderWidth: 2,
@@ -65,7 +74,7 @@ const styles = StyleSheet.create({
     height: 60,
     borderColor: '#B766DA',
     backgroundColor: '#F2D6FF',
-    marginRight: 10,  // Small margin to separate the box from buttons
+    marginRight: 10,
   },
   number: {
     fontSize: 24,
@@ -75,10 +84,10 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center',  // Ensures buttons are centered vertically
+    alignItems: 'center',
   },
   button: {
-    marginVertical: 5,  // Adds space between the up and down buttons
+    marginVertical: 5,
   },
 });
 

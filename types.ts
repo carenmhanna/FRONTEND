@@ -5,9 +5,12 @@ export type RootStackParamList = {
   SignupScreen: undefined;
   Signuptwo: undefined;
   Step7: undefined;
+  YesSeizure:undefined;
+  MenstrualCycleS:undefined;
   Signup3: { gender: string };
   Login1: undefined;
   SeizureTrackingS: undefined;
+  Seizure:undefined;
   NoSeizure: undefined;
   // Add any other screens to your navigation stack here as needed
 };

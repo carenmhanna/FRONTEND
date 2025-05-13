@@ -50,12 +50,13 @@ const Step7 = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginHorizontal: width * 0.05, // Responsive margin for the container
+    backgroundColor:'white',
   },
   scrollContent: {
     flexGrow: 1,
     gap: height * 0.02, // Responsive gap between sections
     paddingBottom: height * 0.05, // Add padding at the bottom for spacing before bottom bar
+    backgroundColor:'white',
   },
   logText: {
     marginTop: height * 0.01, // Adjust top margin
@@ -80,7 +81,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: width * 0.05, // Responsive gap between icons
     marginBottom: height * 0.03, // Adjust margin bottom to provide space between rows
   },
   bottomSpacing: {

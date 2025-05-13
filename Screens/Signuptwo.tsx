@@ -14,7 +14,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigationProp } from '../types';
 import Bottombar from './Bottombar';
-import Dropdownlong2 from './Dropdownlong2';
+import Dropdownlong from './Dropdownlong';
 import CheckboxWithLabel from './CheckboxWithLabel';
 
 const { width } = Dimensions.get('window');
@@ -32,18 +32,36 @@ const Signuptwo = () => {
   const navigation = useNavigation<AuthNavigationProp>();
 
   const currentYear = new Date().getFullYear();
-  const daysList = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+  const daysList = Array.from({ length: 31 }, (_, i) => ({
+    key: (i + 1).toString(),
+    value: (i + 1).toString(),
+  }));
   const monthsList = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
-  ];
-  const yearsList = Array.from({ length: currentYear - 1900 + 1 }, (_, i) =>
-    (currentYear - i).toString()
-  );
+  ].map((month, i) => ({ key: `${i + 1}`, value: month }));
+  const yearsList = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => {
+    const year = (currentYear - i).toString();
+    return { key: year, value: year };
+  });
+
+  const genderList = ['Male', 'Female', 'Other', 'Prefer not to say'].map((g, i) => ({
+    key: `${i}`,
+    value: g,
+  }));
 
   const isAnyCheckboxChecked =
     focalWithAwareness || focalWithoutAwareness || generalized || nonEpileptic;
   const isFormValid = day && month && year && gender && isAnyCheckboxChecked;
+  const selectedSeizureTypes: string[] = [];
+
+if (focalWithAwareness) selectedSeizureTypes.push('Focal With Loss of Awareness');
+if (focalWithoutAwareness) selectedSeizureTypes.push('Focal Without Loss of Awareness');
+if (generalized) selectedSeizureTypes.push('Generalized');
+if (nonEpileptic) selectedSeizureTypes.push('Non-Epileptic');
+
+console.log('Selected Seizure Types:', selectedSeizureTypes);
+
 
   const selectedTypes = [
     focalWithAwareness && 'Focal With Loss of Awareness',
@@ -71,16 +89,10 @@ const Signuptwo = () => {
     isButtonDisabled: boolean;
     onPress?: () => void;
   }) => {
-    const handlePress = () => {
-      if (onPress) {
-        onPress();
-      }
-    };
-
     return (
       <TouchableOpacity
         style={[styles.nextButton, isButtonDisabled && styles.disabledButton]}
-        onPress={handlePress}
+        onPress={onPress}
         disabled={isButtonDisabled}
       >
         <Text style={styles.nextButtonText}>Next</Text>
@@ -93,45 +105,45 @@ const Signuptwo = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
     >
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.topView}>
-            <TouchableOpacity onPress={() => navigation.navigate('SignupScreen')}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('LoginScreen')}
+              style={styles.backButton}
+            >
               <Image
                 source={require('./Signuppics/vector.png')}
-                style={{ position: 'relative', right: width * 0.2 }}
-                resizeMode="contain"
+                style={styles.icon}
               />
             </TouchableOpacity>
-            <Text style={styles.text}>New Account</Text>
+            <Text style={[styles.text, { fontSize: width * 0.08 }]}>
+              New Account
+            </Text>
           </View>
 
           <View style={styles.bar}>
-            <Image source={require('./Signuppics/one.png')} resizeMode="contain" />
-            <Image source={require('./Signuppics/linef.png')} resizeMode="contain" />
-            <Image source={require('./Signup2pics/two.png')} resizeMode="contain" />
-            <Image source={require('./Signuppics/line.png')} resizeMode="contain" />
-            <Image source={require('./Signuppics/three.png')} resizeMode="contain" />
+            <Image source={require('./Signuppics/one.png')} style={styles.stepImage} />
+            <Image source={require('./Signuppics/line.png')} style={styles.stepLine} />
+            <Image source={require('./Signuppics/two.png')} style={styles.stepImage} />
+            <Image source={require('./Signuppics/line.png')} style={styles.stepLine} />
+            <Image source={require('./Signuppics/three.png')} style={styles.stepImage} />
           </View>
 
           <View style={styles.middlecontainer}>
             <Text style={styles.blacktext}>Date of Birth</Text>
             <View style={styles.dropdownRow}>
-              <Dropdownlong2 placeholder="Day" options={daysList} setSelected={setDay} />
-              <Dropdownlong2 placeholder="Month" options={monthsList} setSelected={setMonth} />
-              <Dropdownlong2 placeholder="Year" options={yearsList} setSelected={setYear} />
+              <Dropdownlong placeholder="Day" options={daysList} setSelected={setDay} />
+              <Dropdownlong placeholder="Month" options={monthsList} setSelected={setMonth} />
+              <Dropdownlong placeholder="Year" options={yearsList} setSelected={setYear} />
             </View>
 
             <View style={styles.dropdownSection2}>
               <Text style={styles.blacktext}>Gender</Text>
-              <Dropdownlong2
-                placeholder="Choose Gender"
-                options={['Male', 'Female', 'Other', 'Prefer not to say']}
-                setSelected={setGender}
-              />
+              <Dropdownlong placeholder="Choose Gender" options={genderList} setSelected={setGender} />
             </View>
 
             <View style={styles.dropdownSection}>
@@ -172,9 +184,6 @@ const Signuptwo = () => {
               />
             </View>
 
-            <View style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
-              <Bottombar />
-            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -199,6 +208,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '90%',
     alignSelf: 'center',
+    marginTop: 20,
   },
   topView: {
     flexDirection: 'row',
@@ -218,6 +228,10 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 20,
     marginBottom: 0,
+  },
+  backButton: {
+    position: 'relative',
+    right: 30,
   },
   dropdownRow: {
     flexDirection: 'column',
@@ -260,6 +274,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
+  },
+  icon: {
+    width: width * 0.06,
+    height: width * 0.06,
+    resizeMode: 'contain',
+  },
+  stepImage: {
+    width: width * 0.1,
+    height: width * 0.1,
+    resizeMode: 'contain',
+  },
+  stepLine: {
+    width: width * 0.2,
+    height: 17,
+    resizeMode: 'contain',
   },
 });
 

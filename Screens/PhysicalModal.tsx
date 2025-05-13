@@ -1,42 +1,119 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, Button, StyleSheet, Dimensions } from 'react-native';
-import SearchComponent from './SearchComponent';
+import { Modal, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import Dropdownlong from './Dropdownlong';
+import NumberBox from './Numberbox';
+import Hour from './hour';
+import RoundRadioButtons from './RoundRadioButtons';
+import Minutes from './minutes';
 
+type WorkoutEntry = {
+  name: string;
+  duration: number; // in minutes
+  intensity: string;
+};
 
-const { width, height } = Dimensions.get('window');
+type Props = {
+  visible: boolean;
+  title: string;
+  title2: string;
+  onClose: () => void;
+  onSelect: (entry: WorkoutEntry) => void;
+  options: { key: string; value: string }[];
+  placeholder: string;
+  showType?: boolean;
+};
 
-interface CenteredModalProps {
-  isVisible: boolean; // Receive the visibility state as a prop
-  onClose: () => void; // Receive the function to close the modal
-}
+const PhysicalModal = ({
+  visible,
+  title,
+  title2,
+  onClose,
+  onSelect,
+  options,
+  placeholder,
+  showType = true,
+}: Props) => {
+  const [substance, setSubstance] = useState('');
+  const [quantity, setQuantity] = useState(0);
+  const [emotionalEvent, setEmotionalEvent] = useState('');
+  const [workouts, setWorkouts] = useState<WorkoutEntry[]>([]);
 
-const PhysicalModal: React.FC<CenteredModalProps> = ({ isVisible, onClose }) => {
-  const [period, setPeriod] = useState('');
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [frequency, setFrequency] = useState('');
-  const [isMedicationSelected, setIsMedicationSelected] = useState(false);
+  const handleSaveQuantity = (newQuantity: number) => {
+    setQuantity(newQuantity);  // Update quantity when it's changed in NumberBox
+  };
 
-  const handleMedicationSelection = (selectedMedications: string[]) => {
-    setSelectedOptions(selectedMedications);
-    setIsMedicationSelected(selectedMedications.length > 0);
+  const handleConfirm = () => {
+    if (substance && quantity > 0 && emotionalEvent) {
+      const entry: WorkoutEntry = {
+        name: substance,
+        duration: quantity, // Here, you can convert minutes if necessary
+        intensity: emotionalEvent,
+      };
+
+      // Add new entry to the list of workouts
+      setWorkouts((prevWorkouts) => [...prevWorkouts, entry]);
+      onSelect(entry);  // Pass the data back to parent
+    }
+
+    setSubstance('');
+    setQuantity(0);
+    setEmotionalEvent('');
+    onClose();
+  };
+
+  const handleDelete = (index: number) => {
+    // Delete the workout entry by index
+    setWorkouts((prevWorkouts) => prevWorkouts.filter((_, i) => i !== index));
   };
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isVisible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.blacktext}>Type of Activity</Text>
-          <View style={styles.dropdownRow}>
-            <SearchComponent setSelectedOptions={handleMedicationSelection} />
+    <Modal animationType="fade" transparent visible={visible} onRequestClose={onClose}>
+      <View style={styles.overlay}>
+        <View style={styles.container}>
+          <Text style={styles.title}>{title}</Text>
+
+          {showType && (
+            <Dropdownlong
+              options={options}
+              placeholder={placeholder}
+              setSelected={setSubstance}
+            />
+          )}
+
+          <Text style={styles.title}>{title2}</Text>
+          <View style={styles.boxContainer}>
+            <NumberBox option={substance} onSave={handleSaveQuantity} />
+            <Hour />
+            <NumberBox option={substance} onSave={handleSaveQuantity} />
+            <Minutes />
           </View>
-          <View style={styles.buttonContainer}>
-            <Button title="Confirm" onPress={onClose} color="#ffffff" />
+
+          <View style={styles.inputSection}>
+            <Text style={styles.title}>Intensity Level</Text>
+            <RoundRadioButtons
+              options={['Low', 'Moderate', 'High']}
+              selectedOption={emotionalEvent}
+              onSelect={setEmotionalEvent}
+            />
           </View>
+
+          <TouchableOpacity onPress={handleConfirm} style={styles.closeButton}>
+            <Image source={require('./CheckIcon.png')} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Render Workouts List */}
+        <View style={styles.workoutList}>
+          {workouts.map((workout, index) => (
+            <View key={index} style={styles.workoutEntry}>
+              <Text style={styles.workoutText}>
+                {workout.name} | {workout.duration} | {workout.intensity}
+              </Text>
+              <TouchableOpacity onPress={() => handleDelete(index)} style={styles.deleteButton}>
+                <Text style={styles.deleteText}>X</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
         </View>
       </View>
     </Modal>
@@ -44,60 +121,75 @@ const PhysicalModal: React.FC<CenteredModalProps> = ({ isVisible, onClose }) => 
 };
 
 const styles = StyleSheet.create({
-  blacktext: {
-    fontSize: 27,
-    fontWeight: '500',
-    marginBottom: 10,
-    marginTop: 10,
-  },
-  middlecontainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    marginTop: 30,
-    gap: 10,
-  },
-  dropdownRow: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 20,
-  },
-  buttonContainer: {
-    backgroundColor: '#6B2A88',
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#4E1D74',
-    width: 200,
-    marginTop: 20,
-  },
-  modalBackground: {
+  overlay: {
     flex: 1,
+    backgroundColor: '#6B2A888C',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(107, 42, 136, 0.55)',
   },
-  modalContainer: {
+  inputSection: {
+    width: '80%',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 120,
+  },
+  container: {
+    gap: 10,
+    backgroundColor: '#F2D6FF',
+    padding: 25,
+    borderRadius: 15,
+    width: '90%',
     flexDirection: 'column',
-    width: width * 0.9,
-    height: height * 0.3,
-    padding: 20,
-    backgroundColor: '#EABAFF',
-    borderRadius: 10,
-    justifyContent: 'center',
     alignItems: 'center',
-    gap: 40,
   },
-  modalText: {
+  title: {
     fontSize: 20,
+    color: '#B766DA',
     fontWeight: '500',
-    justifyContent: 'flex-start',
-    alignSelf: 'center',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  closeButton: {
+    backgroundColor: '#6B2A88',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 10,
   },
   boxContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#EABAFF',
+    borderRadius: 20,
+    padding: 40,
+    width: '100%',
+  },
+  workoutList: {
+    marginTop: 20,
+    width: '90%',
+  },
+  workoutEntry: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    backgroundColor: 'white',
+  },
+  workoutText: {
+    fontSize: 16,
+    color: '#4F2A6A',
+  },
+  deleteButton: {
+    backgroundColor: '#F2D6FF',
+    padding: 5,
+    borderRadius: 15,
+  },
+  deleteText: {
+    color: '#FFFFFF',
+    fontSize: 18,
   },
 });
 

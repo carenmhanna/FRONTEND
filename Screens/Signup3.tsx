@@ -13,7 +13,7 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { AuthNavigationProp } from '../types';
 import Bottombar from './Bottombar';
-import Dropdownlong2 from './Dropdownlong2';
+import Dropdownlong from './Dropdownlong';
 import SearchComponent from './SearchComponent';
 import Get_Started from './Get_started';
 
@@ -24,16 +24,12 @@ const Signup3 = () => {
   const route = useRoute<Signup3RouteProp>();
   const navigation = useNavigation<AuthNavigationProp>();
 
-  // Safely access gender with fallback
   const gender = route?.params?.gender ?? '1';
 
-  const [period, setPeriod] = useState('');
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [frequency, setFrequency] = useState('');
-  const [isMedicationSelected, setIsMedicationSelected] = useState(false);
-
-  // Debugging
-  console.log('Selected Gender:', gender);
+  const [period, setPeriod] = useState(''); // for Menstrual Cycle
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // for medication
+  const [frequency, setFrequency] = useState(''); // for Frequency of Medication
+  const [isMedicationSelected, setIsMedicationSelected] = useState(false); // to check if medication is selected
 
   const daysList: string[] = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 
@@ -47,7 +43,7 @@ const Signup3 = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
     >
-      <SafeAreaView style={{ flex: 1 ,backgroundColor:'white',}}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
         <ScrollView
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled"
@@ -63,7 +59,7 @@ const Signup3 = () => {
           </View>
 
           <View style={styles.bar}>
-            <Image source={require('./Signuppics/one.png')} />
+            <Image source={require('./Signuppics/two.png')} />
             <Image source={require('./Signuppics/linef.png')} />
             <Image source={require('./Signup2pics/two.png')} />
             <Image source={require('./Signuppics/linef.png')} />
@@ -76,48 +72,47 @@ const Signup3 = () => {
               <SearchComponent setSelectedOptions={handleMedicationSelection} />
             </View>
 
-            {isMedicationSelected && (
-              <View style={styles.dropdownSection2}>
-                <Text style={styles.blacktext}>Frequency of Medication</Text>
-                <Dropdownlong2
-                  placeholder="Choose Frequency"
-                  options={['Daily', 'As needed', 'Rarely']}
-                  setSelected={setFrequency}
-                />
-              </View>
-            )}
-
             {gender !== '1' && (
               <View style={styles.dropdownSection}>
                 <Text style={styles.blacktext}>Menstrual Cycle Status</Text>
-                <Dropdownlong2
+                <Dropdownlong
                   placeholder="Choose Type"
-                  options={['Regular', 'Irregular', 'Menopause']}
+                  options={[
+                    { key: 'Regular', value: 'Regular' },
+                    { key: 'Irregular', value: 'Irregular' },
+                    { key: 'Menopause', value: 'Menopause' },
+                  ]}
                   setSelected={setPeriod}
                 />
               </View>
             )}
 
-            <View
-              style={{
-                marginTop: 40,
-                justifyContent: 'center',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
+            {/* Show selected medications and frequency */}
+            {isMedicationSelected && frequency && (
+              <View style={styles.selectedInfoContainer}>
+                <Text style={styles.selectedText}>Selected Medications:</Text>
+                {selectedOptions.map((medication, index) => (
+                  <Text key={index} style={styles.medicationText}>
+                    {medication} - {frequency}
+                  </Text>
+                ))}
+              </View>
+            )}
+
+            <View style={styles.buttonContainer}>
               <Get_Started
                 selectedOptions={selectedOptions}
                 frequency={frequency}
                 period={period}
               />
             </View>
-
-            <View style={{ justifyContent: 'center', alignItems: 'flex-end', marginTop: 40 }}>
-              <Bottombar />
-            </View>
           </View>
         </ScrollView>
+
+        {/* Bottom bar fixed */}
+        <View style={styles.bottomBarContainer}>
+          <Bottombar />
+        </View>
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
@@ -126,7 +121,7 @@ const Signup3 = () => {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    paddingBottom: 50,
+    paddingBottom: 100, // Adjusted for fixed bottom bar
     alignItems: 'center',
   },
   blacktext: {
@@ -173,11 +168,34 @@ const styles = StyleSheet.create({
     marginTop: 50,
     width: '100%',
   },
-  dropdownSection2: {
+  selectedInfoContainer: {
+    marginTop: 30,
+    width: '90%',
+    backgroundColor: '#EABAFF',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  selectedText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#6B2A88',
+  },
+  medicationText: {
+    fontSize: 18,
+    color: '#6B2A88',
+  },
+  buttonContainer: {
+    marginTop: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
     width: '100%',
+  },
+  bottomBarContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });
 

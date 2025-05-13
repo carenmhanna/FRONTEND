@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, PanResponder, StyleSheet, Dimensions, PanResponderGestureState, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import { View, Text, PanResponder, StyleSheet, Dimensions, PanResponderGestureState, TouchableOpacity, Image, SafeAreaView, ScrollView } from 'react-native';
 import RoundRadioButtons from './RoundRadioButtons';
 import { useNavigation } from '@react-navigation/native';
 import CustomButton from './CustomButton';
@@ -80,7 +80,7 @@ const MentalHealth = () => {
         <Text style={styles.purpleText}>Mental Health</Text>
       </View>
 
-      <View style={styles.contentContainer}>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* Mood Level */}
         <View style={styles.inputSection}>
           <Text style={styles.title}>Mood Level</Text>
@@ -164,7 +164,7 @@ const MentalHealth = () => {
             disabled={!isButtonEnabled()}
           />
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -172,7 +172,8 @@ const MentalHealth = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: '5%',
+    paddingTop: 20,
   },
   topBar: {
     justifyContent: 'center',
@@ -180,40 +181,45 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     marginTop: 15,
-    marginBottom:30,
+    marginBottom: 30,
   },
   purpleText: {
-    fontSize: 30,
+    fontSize: Dimensions.get('window').width * 0.07, // ~30 on 428px
     color: '#6B2A88',
     fontWeight: '600',
   },
   purpleText2: {
-    fontSize: 20,
+    fontSize: Dimensions.get('window').width * 0.045, // ~20
     color: '#B766DA',
     fontWeight: '500',
+    textAlign: 'center',
   },
   image: {
     position: 'relative',
-    right: 45,
+    right: Dimensions.get('window').width * 0.1, // 10% of width
+    resizeMode: 'contain',
   },
   title: {
-    fontSize: 24,
+    fontSize: Dimensions.get('window').width * 0.055, // ~24
     fontWeight: 'bold',
     color: '#333',
+    textAlign: 'center',
+    marginBottom:10,
   },
   contentContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 70,
+    gap: 60,
     paddingVertical: 20,
   },
   inputSection: {
     width: '80%',
     alignItems: 'center',
     gap: 10,
+    minHeight: 120,
   },
   sliderContainer: {
-    width: '80%',
+    width: '90%',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -253,6 +259,8 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     color: '#B766DA',
+    textAlign: 'center',
+    flex: 1,
   },
 });
 

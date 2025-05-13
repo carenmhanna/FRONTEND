@@ -1,31 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { AuthNavigationProp } from '../types'; 
+import { AuthNavigationProp } from '../types';
 import RoundRadioButtons from './RoundRadioButtons';
 import PlusIcon from './PlusIcon';
 import CustomButton from './CustomButton';
 import PhysicalModal from './PhysicalModal';
 
 const PhysicalActivityS = () => {
-    const navigation = useNavigation<AuthNavigationProp>();  
+    const navigation = useNavigation<AuthNavigationProp>();
     const [exercise, setExercise] = useState('');
     const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
+    const [workouts, setWorkouts] = useState<{ type: string; duration: string }[]>([]);
 
-// Function to open the modal
-const openModal = () => setIsModalVisible(true);
+    // Function to open the modal
+    const openModal = () => setIsModalVisible(true);
 
-// Function to close the modal
-const closeModal = () => setIsModalVisible(false);
+    // Function to close the modal
+    const closeModal = () => setIsModalVisible(false);
 
     // Check if the button should be disabled
     const isButtonDisabled = exercise === '';
 
-    // Function to open the modal
+    // Log workouts whenever the list changes
+    useEffect(() => {
+        console.log('Workouts List:', workouts);
+    }, [workouts]);
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView style={{ flex: 1,backgroundColor:'white', }}>
+            <ScrollView style={{ flex: 1, backgroundColor: 'white', width: '100%' }}>
                 <View style={styles.topBar}>
                     <TouchableOpacity onPress={() => navigation.navigate('Step7')}>
                         <Image source={require("./Loginpics/vector.png")} style={styles.image} />
@@ -49,8 +53,25 @@ const closeModal = () => setIsModalVisible(false);
                             <Text style={styles.purpleText2}>Add Workout(s)</Text>
                             <PlusIcon
                                 onPress={openModal} // Open modal when plus icon is clicked
-                                disabled={false} // Check the alcohol state
+                                disabled={false} // Check the exercise state
                             />
+                        </View>
+                    )}
+
+                    {/* Display selected workouts */}
+                    {workouts.length > 0 && (
+                        <View style={styles.workoutsContainer}>
+                            <Text style={styles.purpleText2}>Selected Workouts</Text>
+                            {workouts.map((workout, index) => (
+                                <View key={index} style={styles.workoutItem}>
+                                    <Text style={styles.workoutText}>{`${workout.type} | ${workout.duration}`}</Text>
+                                    <TouchableOpacity onPress={() => {
+                                        setWorkouts(workouts.filter((_, i) => i !== index)); // Remove workout
+                                    }}>
+                                        <Text style={styles.deleteText}>Delete</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
                         </View>
                     )}
                 </View>
@@ -58,14 +79,33 @@ const closeModal = () => setIsModalVisible(false);
 
             {/* Use the PhysicalModal component here */}
             <PhysicalModal
-  isVisible={isModalVisible}
-  onClose={closeModal}
-/>
+                visible={isModalVisible}
+                onClose={closeModal}
+                onSelect={(entry: any) => {
+                    console.log(entry); // Add this log to check the entry being passed
+                    const formattedEntry = {
+                        type: entry.type || entry.value || entry.name || '',
+                        duration: entry.duration || '',
+                    };
+                    setWorkouts((prev) => [...prev, formattedEntry]);
+                    closeModal();
+                }}
+                title="Type of Exercise"
+                title2="Duration"
+                options={[
+                    { key: 'walking', value: 'Walking' },
+                    { key: 'running', value: 'Running' },
+                    { key: 'swimming', value: 'Swimming' },
+                    { key: 'cycling', value: 'Cycling' },
+                    { key: 'yoga', value: 'Yoga' },
+                ]}
+                placeholder="Select Exercise Type"
+            />
 
             <View style={{ width: "70%", justifyContent: 'center', alignSelf: 'center', marginTop: 30 }}>
-                <CustomButton 
-                    text="Submit" 
-                    onPress={() => {}} 
+                <CustomButton
+                    text="Submit"
+                    onPress={() => {}}
                     disabled={isButtonDisabled}  // Disable button if exercise is empty
                 />
             </View>
@@ -79,6 +119,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
+        width: '100%',
+        backgroundColor: 'white',
     },
     topBar: {
         justifyContent: 'center',
@@ -104,7 +146,7 @@ const styles = StyleSheet.create({
     },
     blackText: {
         color: 'black',
-        fontWeight: 500,
+        fontWeight: '500',
         fontSize: 25,
     },
     plusIconContainer: {
@@ -113,10 +155,27 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         gap: 20,
     },
-    plusText: {
-        fontSize: 18,
-        color: '#6B2A88',  // Adjust the color and styling as needed
-        marginBottom: 10,  // Add margin below the text to space it out from the icon
+    workoutsContainer: {
+        marginTop: 20,
+        alignItems: 'center',
+        gap: 15,
+    },
+    workoutItem: {
+        backgroundColor: '#D1C4E9',  // Light purple
+        padding: 10,
+        borderRadius: 8,
+        width: '80%',
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    workoutText: {
+        color: '#6B2A88',
+        fontWeight: '500',
+    },
+    deleteText: {
+        color: '#FF6347',
+        fontWeight: '600',
     },
 });
 
