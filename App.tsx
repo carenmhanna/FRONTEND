@@ -32,18 +32,18 @@ export default function App() {
     <SafeAreaProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Signuptwo" component={Signuptwo} />
+          <Stack.Screen name="Signup3" component={Signup3} />
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
           <Stack.Screen name="Login1" component={Login1} />
           <Stack.Screen name="MenstrualCycleS" component={MenstrualCycleS} />
           <Stack.Screen name="YesSeizure" component={YesSeizure} />
-          <Stack.Screen name="Signup3" component={Signup3} />
           <Stack.Screen name="SignupScreen" component={SignupScreen} />
           <Stack.Screen name="PhysicalActivityS" component={PhysicalActivityS} />
           <Stack.Screen name="FoodandDietS" component={FoodandDietS} />
           <Stack.Screen name="MedicationAdherenceS" component={MedicationAdherenceS} />
           <Stack.Screen name="MentalHealth" component={MentalHealth} />
           <Stack.Screen name="AlcoholAndSubstance" component={AlcoholAndSubstance} />
-          <Stack.Screen name="Signuptwo" component={Signuptwo} />
           <Stack.Screen name="Step7" component={Step7} />
           <Stack.Screen name="NoSeizure" component={NoSeizure} />
           <Stack.Screen name="Seizure" component={Seizure} />

@@ -72,7 +72,7 @@ const Signup3 = () => {
               <SearchComponent setSelectedOptions={handleMedicationSelection} />
             </View>
 
-            {gender !== '1' && (
+            {gender !== '0' && (
               <View style={styles.dropdownSection}>
                 <Text style={styles.blacktext}>Menstrual Cycle Status</Text>
                 <Dropdownlong

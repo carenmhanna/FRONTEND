@@ -179,8 +179,21 @@ console.log('Selected Seizure Types:', selectedSeizureTypes);
                 type={selectedTypes}
                 isButtonDisabled={!isFormValid}
                 onPress={() => {
-                  navigation.navigate('Signup3', { gender });
-                }}
+  const selectedSeizureTypes: string[] = [];
+
+  if (focalWithAwareness) selectedSeizureTypes.push('Focal With Loss of Awareness');
+  if (focalWithoutAwareness) selectedSeizureTypes.push('Focal Without Loss of Awareness');
+  if (generalized) selectedSeizureTypes.push('Generalized');
+  if (nonEpileptic) selectedSeizureTypes.push('Non-Epileptic');
+
+  console.log('Form Submission:');
+  console.log('Date of Birth:', `${day}-${month}-${year}`);
+  console.log('Gender:', gender);
+  console.log('Selected Seizure Types:', selectedSeizureTypes);
+
+  navigation.navigate('Signup3', { gender });
+}}
+
               />
             </View>
 
