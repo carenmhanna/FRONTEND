@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import * as Notifications from 'expo-notifications';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableScreens } from 'react-native-screens';
 enableScreens();
@@ -30,7 +32,50 @@ import SettingsScreen from './Screens/SettingsScreen';
 import ProfileScreen from './Screens/ProfileScreen';
 const Stack = createStackNavigator();
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
 export default function App() {
+  useEffect(() => {
+      const setupNotification = async () => {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission not granted for notifications');
+          return;
+        }
+  
+  
+        await Notifications.cancelAllScheduledNotificationsAsync();
+  
+        const now = new Date();
+        const targetTime = new Date();
+        targetTime.setHours(20, 0, 0, 0); 
+  
+        if (now >= targetTime) {
+          targetTime.setDate(targetTime.getDate() + 1);
+        }
+  
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: '⏰ Daily Reminder',
+            body: 'Stay consistent. Tap to check in for today.',
+          },
+          trigger: targetTime as unknown as Notifications.NotificationTriggerInput,      
+        });
+  
+  
+      };
+  
+      setupNotification();
+    }, []);
+  
   return (
     <SafeAreaProvider>
       <StepProvider>
@@ -64,3 +109,4 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
