@@ -5,6 +5,8 @@ import { AuthNavigationProp } from '../types';
 import RoundRadioButtons from './RoundRadioButtons';
 import CustomButton from './CustomButton';
 import MyCalendar from './MyCalendar';
+import { useStep } from './StepContext';
+
 
 const MenstrualCycleS = () => {
   const navigation = useNavigation<AuthNavigationProp>();
@@ -22,6 +24,8 @@ const MenstrualCycleS = () => {
   const isSubmitDisabled = !(period && 
     ((period === 'Yes' && startDate) || (period === 'No' && pregnancy))
   );
+
+  const { setStepValue, stepNb, setStepNb } = useStep();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -72,7 +76,11 @@ const MenstrualCycleS = () => {
         <View style={styles.buttonContainer}>
           <CustomButton 
             text="Submit" 
-            onPress={() => navigation.navigate('Step7')} 
+           onPress={() => {
+              setStepValue('menstrualCycle', true);  // <-- set context here
+              navigation.navigate('Step7');
+              setStepNb(stepNb + 1);  // Increment stepNb here
+            }}
             disabled={isSubmitDisabled} // Disable the button based on the conditions
           />
         </View>

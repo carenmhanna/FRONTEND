@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const qttyday = () => {
+const Qttyday = () => {
   return (
     <View>
       <LinearGradient
@@ -32,4 +32,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default qttyday;
+export default Qttyday;

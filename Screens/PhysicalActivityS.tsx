@@ -1,23 +1,28 @@
+// filepath: [PhysicalActivityS.tsx](http://_vscodecontentref_/1)
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigationProp } from '../types';
 import RoundRadioButtons from './RoundRadioButtons';
 import PlusIcon from './PlusIcon';
 import CustomButton from './CustomButton';
 import PhysicalModal from './PhysicalModal';
+import { useStep } from './StepContext'; // Adjust the path if needed
 
 const PhysicalActivityS = () => {
     const navigation = useNavigation<AuthNavigationProp>();
     const [exercise, setExercise] = useState('');
-    const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
-    const [workouts, setWorkouts] = useState<{ type: string; duration: string }[]>([]);
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [workouts, setWorkouts] = useState<{ type: string; duration: string; intensity?: string }[]>([]);
 
     // Function to open the modal
     const openModal = () => setIsModalVisible(true);
 
     // Function to close the modal
     const closeModal = () => setIsModalVisible(false);
+
+    const { setStepNb, stepNb, setStepValue } = useStep();
+
 
     // Check if the button should be disabled
     const isButtonDisabled = exercise === '';
@@ -26,6 +31,47 @@ const PhysicalActivityS = () => {
     useEffect(() => {
         console.log('Workouts List:', workouts);
     }, [workouts]);
+
+    // Function to submit physical activity to backend
+    const submitPhysicalActivity = async () => {
+        // Replace with your actual JWT token for testing
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjY1MzRhNzJkMmNhZjkwYzk1MmM3YSIsImlhdCI6MTc0NzQxNDY3MCwiZXhwIjoxNzQ3NDE4MjcwfQ.ozPxTjUa6xiwysc8zrmAUB59cyyKFCUrN5wf1J-lsW0";
+
+        // Prepare the data to match your backend schema
+        const payload = {
+            log_date: new Date(),
+            exercise: workouts.map(w => ({
+                exercisetype: w.type,
+                intensity: w.intensity || "Moderate",
+                duration: Number(w.duration),
+            })),
+        };
+
+        try {
+            const response = await fetch("http://192.168.18.76:5000/api/physical-activity", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                Alert.alert("Success", "Physical activity logged!");
+                setWorkouts([]); // Clear workouts after successful submission
+                setExercise('');
+                setStepValue('physicalActivity', true);
+setStepNb(stepNb + 1);
+
+            } else {
+                Alert.alert("Error", data.error || "Failed to log activity");
+            }
+        } catch (err) {
+            Alert.alert("Network Error", "Could not connect to the server.");
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -52,8 +98,8 @@ const PhysicalActivityS = () => {
                         <View style={styles.plusIconContainer}>
                             <Text style={styles.purpleText2}>Add Workout(s)</Text>
                             <PlusIcon
-                                onPress={openModal} // Open modal when plus icon is clicked
-                                disabled={false} // Check the exercise state
+                                onPress={openModal}
+                                disabled={false}
                             />
                         </View>
                     )}
@@ -64,9 +110,11 @@ const PhysicalActivityS = () => {
                             <Text style={styles.purpleText2}>Selected Workouts</Text>
                             {workouts.map((workout, index) => (
                                 <View key={index} style={styles.workoutItem}>
-                                    <Text style={styles.workoutText}>{`${workout.type} | ${workout.duration}`}</Text>
+                                    <Text style={styles.workoutText}>
+                                        {`${workout.type} | ${workout.duration} min${workout.intensity ? ` | ${workout.intensity}` : ''}`}
+                                    </Text>
                                     <TouchableOpacity onPress={() => {
-                                        setWorkouts(workouts.filter((_, i) => i !== index)); // Remove workout
+                                        setWorkouts(workouts.filter((_, i) => i !== index));
                                     }}>
                                         <Text style={styles.deleteText}>Delete</Text>
                                     </TouchableOpacity>
@@ -82,10 +130,11 @@ const PhysicalActivityS = () => {
                 visible={isModalVisible}
                 onClose={closeModal}
                 onSelect={(entry: any) => {
-                    console.log(entry); // Add this log to check the entry being passed
+                    // Accepts { name/type/value, duration, intensity }
                     const formattedEntry = {
                         type: entry.type || entry.value || entry.name || '',
                         duration: entry.duration || '',
+                        intensity: entry.intensity || entry.emotionalEvent || '',
                     };
                     setWorkouts((prev) => [...prev, formattedEntry]);
                     closeModal();
@@ -105,8 +154,8 @@ const PhysicalActivityS = () => {
             <View style={{ width: "70%", justifyContent: 'center', alignSelf: 'center', marginTop: 30 }}>
                 <CustomButton
                     text="Submit"
-                    onPress={() => {}}
-                    disabled={isButtonDisabled}  // Disable button if exercise is empty
+                    onPress={submitPhysicalActivity}
+                    disabled={isButtonDisabled || (exercise === 'Yes' && workouts.length === 0)}
                 />
             </View>
         </SafeAreaView>
@@ -150,7 +199,7 @@ const styles = StyleSheet.create({
         fontSize: 25,
     },
     plusIconContainer: {
-        marginTop: 20,  // Add space above the plus icon
+        marginTop: 20,
         alignItems: 'center',
         flexDirection: 'column',
         gap: 20,
@@ -161,7 +210,7 @@ const styles = StyleSheet.create({
         gap: 15,
     },
     workoutItem: {
-        backgroundColor: '#D1C4E9',  // Light purple
+        backgroundColor: '#D1C4E9',
         padding: 10,
         borderRadius: 8,
         width: '80%',

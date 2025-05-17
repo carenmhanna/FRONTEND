@@ -14,7 +14,7 @@ const Bottombar = () => {
             <TouchableOpacity onPress={() => navigation.navigate('Login1')}>
                 <Image source={require('./Bottombarpics/Calendar.png')} style={styles.image} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('Login1')}>
+            <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen' as never)}>
                 <Image source={require('./Bottombarpics/Contact.png')} style={styles.image} />
             </TouchableOpacity>
         </View>

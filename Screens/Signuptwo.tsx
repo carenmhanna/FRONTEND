@@ -11,15 +11,19 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { AuthNavigationProp } from '../types';
 import Bottombar from './Bottombar';
 import Dropdownlong from './Dropdownlong';
 import CheckboxWithLabel from './CheckboxWithLabel';
+import { RootStackParamList } from '../types';
 
 const { width } = Dimensions.get('window');
 
 const Signuptwo = () => {
+  const route = useRoute();
+  console.log('Data received from Screen 1:', route.params);
+
   const [day, setDay] = useState('');
   const [month, setMonth] = useState('');
   const [year, setYear] = useState('');
@@ -45,23 +49,14 @@ const Signuptwo = () => {
     return { key: year, value: year };
   });
 
-  const genderList = ['Male', 'Female', 'Other', 'Prefer not to say'].map((g, i) => ({
-    key: `${i}`,
+  const genderList = ['Male', 'Female', 'Other', 'Prefer not to say'].map(g => ({
+    key: g,
     value: g,
   }));
 
   const isAnyCheckboxChecked =
     focalWithAwareness || focalWithoutAwareness || generalized || nonEpileptic;
   const isFormValid = day && month && year && gender && isAnyCheckboxChecked;
-  const selectedSeizureTypes: string[] = [];
-
-if (focalWithAwareness) selectedSeizureTypes.push('Focal With Loss of Awareness');
-if (focalWithoutAwareness) selectedSeizureTypes.push('Focal Without Loss of Awareness');
-if (generalized) selectedSeizureTypes.push('Generalized');
-if (nonEpileptic) selectedSeizureTypes.push('Non-Epileptic');
-
-console.log('Selected Seizure Types:', selectedSeizureTypes);
-
 
   const selectedTypes = [
     focalWithAwareness && 'Focal With Loss of Awareness',
@@ -73,19 +68,9 @@ console.log('Selected Seizure Types:', selectedSeizureTypes);
     .join(', ');
 
   const NextButton = ({
-    day,
-    month,
-    year,
-    gender,
-    type,
     isButtonDisabled,
     onPress,
   }: {
-    day: string;
-    month: string;
-    year: string;
-    gender: string;
-    type: string;
     isButtonDisabled: boolean;
     onPress?: () => void;
   }) => {
@@ -112,7 +97,7 @@ console.log('Selected Seizure Types:', selectedSeizureTypes);
         >
           <View style={styles.topView}>
             <TouchableOpacity
-              onPress={() => navigation.navigate('LoginScreen')}
+              onPress={() => navigation.goBack()}
               style={styles.backButton}
             >
               <Image
@@ -143,7 +128,11 @@ console.log('Selected Seizure Types:', selectedSeizureTypes);
 
             <View style={styles.dropdownSection2}>
               <Text style={styles.blacktext}>Gender</Text>
-              <Dropdownlong placeholder="Choose Gender" options={genderList} setSelected={setGender} />
+              <Dropdownlong
+              placeholder="Choose Gender"
+              options={genderList}
+              setSelected={(selectedValue) => setGender(selectedValue)}
+              />
             </View>
 
             <View style={styles.dropdownSection}>
@@ -172,31 +161,38 @@ console.log('Selected Seizure Types:', selectedSeizureTypes);
 
             <View style={styles.buttonContainer}>
               <NextButton
-                day={day}
-                month={month}
-                year={year}
-                gender={gender}
-                type={selectedTypes}
                 isButtonDisabled={!isFormValid}
                 onPress={() => {
-  const selectedSeizureTypes: string[] = [];
+                  // Convert month name to number
+                  const monthNumber = monthsList.find(m => m.value === month)?.key || '1';
+                  // Create ISO date string
+                  const date_of_birth = new Date(
+                    Number(year),
+                    Number(monthNumber) - 1,
+                    Number(day)
+                  ).toISOString();
 
-  if (focalWithAwareness) selectedSeizureTypes.push('Focal With Loss of Awareness');
-  if (focalWithoutAwareness) selectedSeizureTypes.push('Focal Without Loss of Awareness');
-  if (generalized) selectedSeizureTypes.push('Generalized');
-  if (nonEpileptic) selectedSeizureTypes.push('Non-Epileptic');
+                  const selectedSeizureTypes: string[] = [];
+                  if (focalWithAwareness) selectedSeizureTypes.push('Focal With Loss of Awareness');
+                  if (focalWithoutAwareness) selectedSeizureTypes.push('Focal Without Loss of Awareness');
+                  if (generalized) selectedSeizureTypes.push('Generalized');
+                  if (nonEpileptic) selectedSeizureTypes.push('Non-epileptic');
 
-  console.log('Form Submission:');
-  console.log('Date of Birth:', `${day}-${month}-${year}`);
-  console.log('Gender:', gender);
-  console.log('Selected Seizure Types:', selectedSeizureTypes);
-
-  navigation.navigate('Signup3', { gender });
-}}
-
+                  navigation.navigate('Signup3', {
+                    ...(route.params as {
+                      email: string;
+                      first_name: string;
+                      last_name: string;
+                      password: string;
+                      phone: string;
+                    }),
+                    date_of_birth, // ISO string
+                    gender,
+                    seizureTypes: selectedSeizureTypes, // string[]
+                  });
+                }}
               />
             </View>
-
           </View>
         </ScrollView>
       </SafeAreaView>

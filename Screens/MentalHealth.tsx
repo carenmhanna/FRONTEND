@@ -1,9 +1,11 @@
+// filepath: [MentalHealth.tsx](http://_vscodecontentref_/1)
 import React, { useState, useRef } from 'react';
-import { View, Text, PanResponder, StyleSheet, Dimensions, PanResponderGestureState, TouchableOpacity, Image, SafeAreaView, ScrollView } from 'react-native';
+import { View, Text, PanResponder, StyleSheet, Dimensions, PanResponderGestureState, TouchableOpacity, Image, SafeAreaView, ScrollView, Alert } from 'react-native';
 import RoundRadioButtons from './RoundRadioButtons';
 import { useNavigation } from '@react-navigation/native';
 import CustomButton from './CustomButton';
 import type { AuthNavigationProp } from '../types';
+import { useStep } from './StepContext';
 
 const MentalHealth = () => {
   const navigation = useNavigation<AuthNavigationProp>();
@@ -13,6 +15,7 @@ const MentalHealth = () => {
   const [emotionValue, setEmotionValue] = useState<number>(0);
   const sliderWidth = Dimensions.get('window').width * 0.6;
   const stepWidth = sliderWidth / 10;
+  const { setStepValue, setStepNb, stepNb } = useStep(); // <-- useStep hook
 
   const handlePanResponderMove = (setLevel: React.Dispatch<React.SetStateAction<number>>, sliderWidth: number, stepWidth: number) => {
     return (_: any, gestureState: PanResponderGestureState) => {
@@ -69,6 +72,50 @@ const MentalHealth = () => {
 
   const isButtonEnabled = () => {
     return emotionalEvent !== '';
+  };
+
+  // --- SUBMIT FUNCTION ---
+  const submitMentalHealth = async () => {
+    // Replace with your actual JWT token
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjY1MzRhNzJkMmNhZjkwYzk1MmM3YSIsImlhdCI6MTc0NzQyNzM5NCwiZXhwIjoxNzQ3NDMwOTk0fQ.sVL_m9VX0wCoC4ImBBdrv_5J60P1eHeBhiJ4EQ91D0Q";
+
+    const payload: any = {
+      log_date: new Date(),
+      stress: stressLevel,
+      mood: moodLevel,
+    };
+
+    if (emotionalEvent === 'Yes') {
+      payload.significant_event = { severity: emotionValue };
+    }
+
+    try {
+      const response = await fetch("http://192.168.18.76:5000/api/mental-health", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        Alert.alert("Success", "Mental health log submitted!");
+        // Optionally reset state here
+        setStepValue('mentalHealth', true);
+        setStepNb(stepNb + 1);
+        setStressLevel(0);
+        setMoodLevel(0);
+        setEmotionalEvent('');
+        setEmotionValue(0);
+        navigation.navigate('Step7');
+      } else {
+        Alert.alert("Error", data.error || "Failed to log mental health");
+      }
+    } catch (err) {
+      Alert.alert("Network Error", "Could not connect to the server.");
+    }
   };
 
   return (
@@ -160,7 +207,7 @@ const MentalHealth = () => {
         <View style={styles.inputSection}>
           <CustomButton
             text="Submit"
-            onPress={() => navigation.navigate('Step7')}
+            onPress={submitMentalHealth}
             disabled={!isButtonEnabled()}
           />
         </View>

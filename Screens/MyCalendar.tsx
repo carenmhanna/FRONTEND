@@ -1,75 +1,67 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
-import { CalendarList } from 'react-native-calendars';
-import { AntDesign } from '@expo/vector-icons'; // Import arrow icons
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { Calendar } from 'react-native-calendars';
 
 const { width } = Dimensions.get('window');
 
 interface MyCalendarProps {
-  onDateSelect: (date: string) => void; // Pass the selected date to parent
+  onDateSelect: (date: string) => void;
 }
 
 const MyCalendar: React.FC<MyCalendarProps> = ({ onDateSelect }) => {
-  const [selectedDate, setSelectedDate] = useState('');
-  const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().split('T')[0]); // Track current month
-  const [key, setKey] = useState(0); // Force re-render
+  const today = new Date();
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [currentMonth, setCurrentMonth] = useState(today.toISOString().split('T')[0]);
 
-  // Handle day press and notify parent component
   const onDayPress = (day: any) => {
-    console.log('Selected Day:', day);
+    if (new Date(day.dateString) > today) return;
     setSelectedDate(day.dateString);
-    onDateSelect(day.dateString); // Pass the selected date to the parent
+    onDateSelect(day.dateString);
   };
 
-  // Navigate to the previous month
-  const goToPreviousMonth = () => {
-    const newDate = new Date(currentMonth);
-    newDate.setMonth(newDate.getMonth() - 1);
-    setCurrentMonth(newDate.toISOString().split('T')[0]);
-    setKey((prevKey) => prevKey + 1); // Force re-render
-  };
-
-  // Navigate to the next month
-  const goToNextMonth = () => {
-    const newDate = new Date(currentMonth);
-    newDate.setMonth(newDate.getMonth() + 1);
-    setCurrentMonth(newDate.toISOString().split('T')[0]);
-    setKey((prevKey) => prevKey + 1); // Force re-render
-  };
+  const weekDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   return (
     <View style={styles.container}>
+
+      {/* Keep month/year text only, no arrows */}
       <View style={styles.navigationContainer}>
-        <TouchableOpacity onPress={goToPreviousMonth} style={styles.arrowButton}>
-          <AntDesign name="left" size={24} color="#6B2A88" />
-        </TouchableOpacity>
         <Text style={styles.monthText}>
-          {new Date(currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' })}
+          {new Date(currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase()}
         </Text>
-        <TouchableOpacity onPress={goToNextMonth} style={styles.arrowButton}>
-          <AntDesign name="right" size={24} color="#6B2A88" />
-        </TouchableOpacity>
       </View>
 
+      {/* Weekday header */}
+      <View style={styles.weekDayContainer}>
+        {weekDays.map((day) => (
+          <View key={day} style={styles.dayBox}>
+            <Text style={styles.dayText}>{day}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Calendar */}
       <View style={styles.calendarFrame}>
-        <CalendarList
-          key={key} // This forces a re-render when month changes
-          current={currentMonth} // Updates calendar to the selected month
+        <Calendar
+          current={currentMonth}
+          maxDate={today.toISOString().split('T')[0]}
           onDayPress={onDayPress}
           markedDates={{
             [selectedDate]: { selected: true, selectedColor: '#6B2A88', selectedTextColor: 'white' },
           }}
-          horizontal={false} // Enable horizontal scrolling
-          pagingEnabled={true} // Snap to month
-          calendarWidth={width - 30} // Fit inside the frame
-          hideExtraDays={false} // Hide extra days
-          disableMonthChange={true} // Prevent swipe change
+          hideExtraDays={true}
           theme={{
             backgroundColor: '#EABAFF',
             calendarBackground: '#EABAFF',
             dayTextColor: 'black',
+            textSectionTitleColor: 'transparent', // hide default weekdays
             textDayFontSize: 18,
+            monthTextColor: '#6B2A88',
+            arrowColor: '#6B2A88',
           }}
+          renderHeader={() => <></>} // hide default header (with arrows)
+          onMonthChange={(month) => setCurrentMonth(month.dateString)} // update currentMonth on swipe
+          style={{ width: width - 30 }}
         />
       </View>
     </View>
@@ -85,17 +77,34 @@ const styles = StyleSheet.create({
   },
   navigationContainer: {
     flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-  },
-  arrowButton: {
-    padding: 10,
   },
   monthText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#6B2A88',
-    marginHorizontal: 10,
+  },
+  weekDayContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: width - 30,
+    marginBottom: 5,
+    paddingHorizontal: 2,
+  },
+  dayBox: {
+    flex: 1,
+    backgroundColor: '#6B2A88',
+    borderRadius: 20,
+    marginHorizontal: 2,
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  dayText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
   calendarFrame: {
     borderWidth: 3,

@@ -3,61 +3,113 @@ import {
   Modal,
   View,
   Text,
-  Button,
   StyleSheet,
   Dimensions,
   ScrollView,
+  TextInput,
+  Button,
+  TouchableOpacity,
 } from 'react-native';
 import NumberBox from './Numberbox';
-import Pillsbox from './pillsbox';
 import Dropdownlong from './Dropdownlong';
+import Pillsbox from './pillsbox';
 
 const { width, height } = Dimensions.get('window');
 
 interface MissedDosesProps {
   isVisible: boolean;
   onClose: () => void;
-  onSave: (quantity: number, pills: number) => void;
-  missedDosesQuantityOnly: number;
-  missedDosesPills: number;
+  onSave: (doseOrEmpty: string | undefined, frequency: string, medName?: string) => void;
+  other?: boolean;
+
+  // Ajout des props initiales
+  initialDose?: string;         // dose initiale (ex: "1.5")
+  initialFrequency?: string;    // fréquence initiale (ex: "Daily")
+  initialMedication?: string;   // nom de médicament initial
 }
+
 
 const CenteredModal: React.FC<MissedDosesProps> = ({
   isVisible,
   onClose,
   onSave,
-  missedDosesQuantityOnly,
-  missedDosesPills,
-}) => {
-  const [quantity, setQuantity] = useState(missedDosesQuantityOnly);
-  const [pills, setPills] = useState(missedDosesPills);
+  other = false,
+  initialDose,
+  initialFrequency,
+  initialMedication,
+}) => 
+ {
+  const [value1, setValue1] = useState(0);
+  const [value2, setValue2] = useState(0);
   const [frequency, setFrequency] = useState('');
+  const [medName, setMedName] = useState('');
 
   useEffect(() => {
-    if (isVisible) {
-      setQuantity(missedDosesQuantityOnly);
-      setPills(missedDosesPills);
+  if (isVisible) {
+    const freq = initialFrequency || '';
+    setFrequency(freq);
+
+    setMedName(initialMedication || '');
+
+    if (initialDose && freq === 'Daily') {
+      const parts = initialDose.split('.');
+      setValue1(parseInt(parts[0]) || 0);
+      setValue2(parseInt(parts[1]) || 0);
+    } else {
+      setValue1(0);
+      setValue2(0);
     }
-  }, [isVisible, missedDosesQuantityOnly, missedDosesPills]);
+  }
+}, [isVisible, initialDose, initialFrequency, initialMedication]);
+
 
   const handleSaveQuantity = (newValue: number, option: string) => {
-    if (option === 'Quantity') {
-      setQuantity(newValue);
-    } else if (option === 'Pills') {
-      setPills(newValue);
-    }
+    if (option === 'Box1') setValue1(newValue);
+    else if (option === 'Box2') setValue2(newValue);
   };
 
   const handleConfirm = () => {
-    onSave(quantity, pills);
+    let dose: string | undefined = undefined;
+    if (frequency === 'Daily') {
+      dose = value2 > 0 ? `${value1}.${value2}` : `${value1}`;
+    }
+    if (other) {
+      onSave(dose, frequency, medName.trim());
+    } else {
+      onSave(dose, frequency);
+    }
     onClose();
   };
+
+  // Validation
+  const isFrequencyValid = frequency.length > 0;
+  const isMedNameValid = other ? medName.trim().length > 0 : true;
+  const isDailyDoseValid = frequency === 'Daily' ? value1 >= 0 : true;
+
+  const isFormValid = isFrequencyValid && isMedNameValid && isDailyDoseValid;
 
   return (
     <Modal animationType="slide" transparent visible={isVisible} onRequestClose={onClose}>
       <View style={styles.modalBackground}>
         <View style={styles.modalContainer}>
+          {/* Close button top right */}
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.closeButtonText}>×</Text>
+          </TouchableOpacity>
+
           <ScrollView contentContainerStyle={styles.scrollContainer}>
+            {other && (
+              <View style={{ width: '100%', marginBottom: 20 }}>
+                <Text style={styles.label}>Name of Medication</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter medication name"
+                  value={medName}
+                  onChangeText={setMedName}
+                />
+              </View>
+            )}
+
             <View style={styles.dropdownSection}>
               <Text style={styles.label}>Frequency of Medication</Text>
               <Dropdownlong
@@ -74,17 +126,31 @@ const CenteredModal: React.FC<MissedDosesProps> = ({
             {frequency === 'Daily' && (
               <>
                 <Text style={styles.label}>Daily Dose</Text>
-                <View style={styles.boxContainer}>
-                  <NumberBox option="Quantity" onSave={handleSaveQuantity} initialValue={quantity} />
-                  <Text style={{ fontSize: 60, color: 'white' }}> .</Text>
-                  <NumberBox option="Pills" onSave={handleSaveQuantity} initialValue={pills} />
+                <View style={{ justifyContent: 'center', flexDirection: 'row' }}>
+                  <NumberBox option="Box1" onSave={handleSaveQuantity} initialValue={value1} />
+                  <Text style={{ color: 'white', fontSize: 56 }}>.</Text>
+                  <NumberBox option="Box2" onSave={handleSaveQuantity} initialValue={value2} />
+                  <View style={{ marginTop: 10 }}>
+                    <Pillsbox />
+                  </View>
                 </View>
-                <Pillsbox />
               </>
             )}
 
             <View style={styles.buttonContainer}>
-              <Button title="Confirm" onPress={handleConfirm} color="#ffffff" />
+              <Button
+                title="Confirm"
+                onPress={handleConfirm}
+                disabled={!isFormValid}
+                color="#ffffff"
+              />
+            </View>
+            <View style={styles.buttonContainer}>
+              <Button
+                title="close"
+                onPress={onClose}
+                color="#ffffff"
+              />
             </View>
           </ScrollView>
         </View>
@@ -106,6 +172,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#EABAFF',
     borderRadius: 15,
     padding: 20,
+    position: 'relative',
   },
   scrollContainer: {
     alignItems: 'center',
@@ -120,14 +187,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     marginBottom: 10,
-    color: '#4E1D74',
+    color: 'white',
     textAlign: 'center',
-  },
-  boxContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
   },
   buttonContainer: {
     backgroundColor: '#6B2A88',
@@ -137,6 +198,32 @@ const styles = StyleSheet.create({
     width: 180,
     alignSelf: 'center',
     marginTop: 10,
+  },
+  textInput: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    fontSize: 18,
+    color: '#333',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    backgroundColor: '#6B2A88',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 24,
+    lineHeight: 24,
+    fontWeight: 'bold',
   },
 });
 

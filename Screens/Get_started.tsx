@@ -4,9 +4,9 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthNavigationProp } from '../types';
 
 interface NextProps {
-  period: string;
-  frequency: string;
-  selectedOptions:string[];
+  period?: string;
+  frequency?: string;
+  selectedOptions?:string[];
 }
 
 const Get_started: React.FC<NextProps> = ({ period,frequency,selectedOptions }) => {

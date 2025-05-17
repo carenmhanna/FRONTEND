@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import Dropdownlong from './Dropdownlong';
 import NumberBox from './Numberbox';
 import Glasses from './glasses';
@@ -19,7 +26,8 @@ type Props = {
   onSelect: (entry: SubstanceEntry) => void;
   options: { key: string; value: string }[];
   placeholder: string;
-  showType?: boolean; // New prop to control if the type options should be shown
+  showType?: boolean;
+  prefill?: SubstanceEntry | null;
 };
 
 const AlcoholModal = ({
@@ -31,16 +39,28 @@ const AlcoholModal = ({
   options,
   placeholder,
   showType = true,
+  prefill,
 }: Props) => {
   const [substance, setSubstance] = useState('');
   const [quantity, setQuantity] = useState(0);
   const [drinkType, setDrinkType] = useState('glass');
 
-  // Handle Narguileh-specific case when showType is false
+  useEffect(() => {
+    if (prefill) {
+      setSubstance(prefill.substance);
+      setQuantity(prefill.quantity);
+      setDrinkType(prefill.drinkType);
+    } else {
+      setSubstance('');
+      setQuantity(0);
+      setDrinkType('glass');
+    }
+  }, [prefill]);
+
   useEffect(() => {
     if (!showType) {
       setSubstance('Narguileh');
-      setDrinkType('session'); // Session is the type for Narguileh
+      setDrinkType('session');
     }
   }, [showType]);
 
@@ -48,8 +68,6 @@ const AlcoholModal = ({
     if (quantity > 0 && substance) {
       onSelect({ substance, quantity, drinkType });
     }
-
-    // Reset state
     setSubstance('');
     setQuantity(0);
     setDrinkType('glass');
@@ -61,7 +79,7 @@ const AlcoholModal = ({
   };
 
   const handleSaveQuantity = (newQuantity: number) => {
-    setQuantity(newQuantity);  // Update quantity when it's changed in NumberBox
+    setQuantity(newQuantity);
   };
 
   return (
@@ -70,32 +88,30 @@ const AlcoholModal = ({
         <View style={styles.container}>
           <Text style={styles.title}>{title}</Text>
 
-          {/* Show substance dropdown only if showType is true */}
           {showType && (
             <Dropdownlong
               options={options}
               placeholder={placeholder}
               setSelected={setSubstance}
+              selected={substance}
             />
           )}
 
           <Text style={styles.title}>{title2}</Text>
           <View style={styles.boxContainer}>
-            {/* Pass quantity and onSave props to NumberBox */}
-            <NumberBox option={substance} onSave={handleSaveQuantity} />
+  <NumberBox option={substance} onSave={handleSaveQuantity} initialValue={quantity} />
+  {showType && (
+    <View style={{ flexDirection: 'column', gap: 5 }}>
+      <TouchableOpacity onPress={() => handleSelectDrinkType('glass')}>
+        <Glasses />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => handleSelectDrinkType('shot')}>
+        <Shots />
+      </TouchableOpacity>
+    </View>
+  )}
+</View>
 
-            {/* Show drink type options only if showType is true */}
-            {showType && (
-              <View style={{ flexDirection: 'column', gap: 5 }}>
-                <TouchableOpacity onPress={() => handleSelectDrinkType('glass')}>
-                  <Glasses />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleSelectDrinkType('shot')}>
-                  <Shots />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
 
           <TouchableOpacity onPress={handleConfirm} style={styles.closeButton}>
             <Image source={require('./CheckIcon.png')} />

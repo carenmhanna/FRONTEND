@@ -16,9 +16,9 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigationProp } from '../types';
 import PhoneInput from 'react-native-phone-number-input';
-
+ 
 const { width, height } = Dimensions.get('window');
-
+ 
 const SignupScreen = () => {
   const navigation = useNavigation<AuthNavigationProp>();
   const [email, setEmail] = useState('');
@@ -29,9 +29,9 @@ const SignupScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [formattedValue, setFormattedValue] = useState('');
   const phoneInput = useRef<PhoneInput>(null);
-
+ 
   const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
+ 
   const allFieldsValid =
     name &&
     lastname &&
@@ -39,18 +39,24 @@ const SignupScreen = () => {
     email &&
     phoneInput.current?.isValidNumber(phoneNumber) &&
     isValidEmail(email);
-
+ 
   const handleNext = () => {
     if (!allFieldsValid) {
       alert('Please fill in all fields with valid information.');
       return;
     }
-
-    console.log('Email:', email);
-    console.log('Phone:', formattedValue);
-    navigation.navigate('Signuptwo');
+ 
+    // Instead of fetch, just navigate and pass data
+    navigation.navigate('Signuptwo', {
+      first_name: name,
+      last_name: lastname,
+      password: pass,
+      email: email,
+      phone: formattedValue,
+    });
+   
   };
-
+ 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -71,7 +77,7 @@ const SignupScreen = () => {
               </TouchableOpacity>
               <Text style={[styles.text, { fontSize: width * 0.08 }]}>New Account</Text>
             </View>
-
+ 
             <View style={styles.bar}>
               <Image source={require('./Signuppics/one.png')} style={styles.stepImage} />
               <Image source={require('./Signuppics/line.png')} style={styles.stepLine} />
@@ -79,7 +85,7 @@ const SignupScreen = () => {
               <Image source={require('./Signuppics/line.png')} style={styles.stepLine} />
               <Image source={require('./Signuppics/three.png')} style={styles.stepImage} />
             </View>
-
+ 
             <View style={styles.formContainer}>
               <Text style={styles.label}>First Name</Text>
               <TextInput
@@ -89,7 +95,7 @@ const SignupScreen = () => {
                 value={name}
                 onChangeText={setName}
               />
-
+ 
               <Text style={styles.label}>Last Name</Text>
               <TextInput
                 style={[styles.input, { width: width * 0.9 }]}
@@ -98,7 +104,7 @@ const SignupScreen = () => {
                 value={lastname}
                 onChangeText={setlastName}
               />
-
+ 
               <Text style={styles.label}>Password</Text>
               <View style={styles.row}>
                 <TextInput
@@ -123,7 +129,7 @@ const SignupScreen = () => {
                   />
                 </TouchableOpacity>
               </View>
-
+ 
               <Text style={styles.label}>Email</Text>
               <TextInput
                 style={[styles.input, { width: width * 0.9 }]}
@@ -133,12 +139,12 @@ const SignupScreen = () => {
                 value={email}
                 onChangeText={setEmail}
               />
-
+ 
               <Text style={styles.label}>Mobile Number</Text>
               <PhoneInput
                 ref={phoneInput}
                 defaultValue={phoneNumber}
-                defaultCode="US"
+                defaultCode="LB"
                 layout="first"
                 onChangeText={setPhoneNumber}
                 onChangeFormattedText={setFormattedValue}
@@ -153,7 +159,7 @@ const SignupScreen = () => {
                   borderRadius: 20,
                 }}
               />
-
+ 
               <View style={styles.termsContainer}>
                 <Text style={styles.termsText}>By continuing, you agree to </Text>
                 <View style={styles.termsRow}>
@@ -165,7 +171,7 @@ const SignupScreen = () => {
                     <Text style={styles.linkText}>Privacy Policy</Text>
                   </TouchableOpacity>
                 </View>
-
+ 
                 <TouchableOpacity
                   onPress={handleNext}
                   disabled={!allFieldsValid}
@@ -179,14 +185,14 @@ const SignupScreen = () => {
                   <Text style={styles.nextText}>Next</Text>
                 </TouchableOpacity>
               </View>
-
+ 
               <View style={{ height: 100 }} />
             </View>
           </ScrollView>
-
+ 
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Signuptwo')}>
+            <TouchableOpacity onPress={() => navigation.navigate('LoginScreen') as never}>
               <Text style={styles.signup}>Log In</Text>
             </TouchableOpacity>
           </View>
@@ -195,7 +201,7 @@ const SignupScreen = () => {
     </KeyboardAvoidingView>
   );
 };
-
+ 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -314,5 +320,5 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
 });
-
+ 
 export default SignupScreen;

@@ -16,11 +16,12 @@ import PlusIcon from './PlusIcon';
 import AlcoholModal from './AlcoholModal';
 import NarguilehModal from './NarguilehModal';
 import SubstanceModal from './SubstanceModal';
+import { useStep } from './StepContext';
 
 type SubstanceEntry = {
   substance: string;
   quantity: number;
-  drinkType: string;
+  drinkType: string; // For alcohol, this will be the unit ("glass" or "shot")
 };
 
 const AlcoholAndSubstance = () => {
@@ -32,6 +33,7 @@ const AlcoholAndSubstance = () => {
   const [caffeine, setCaffeine] = useState('');
   const [energyDrinks, setEnergyDrinks] = useState('');
   const [recreationalDrugs, setRecreationalDrugs] = useState('');
+  const { setStepValue, setStepNb, stepNb } = useStep(); 
 
   const [alcoholDetails, setAlcoholDetails] = useState<string[]>([]);
   const [smokingDetails, setSmokingDetails] = useState<string[]>([]);
@@ -52,42 +54,36 @@ const AlcoholAndSubstance = () => {
   const energyDrinkOptions = ['Red Bull', 'Monster', 'Other'];
   const narguilehOptions = ['Grape Mint', 'Double Apple', 'Watermelon', 'Other'];
   const recreationalDrugOptions = ['Cannabis', 'MDMA', 'LSD', 'Cocaine', 'Other'];
-  const [editIndex, setEditIndex] = useState<number | null>(null); // Track which index is being edited
+  const [editIndex, setEditIndex] = useState<number | null>(null);
 
-
-const handleEdit = (index: number) => {
-  // Remove the existing entry at the given index
-  switch (modalType) {
-    case 'Alcohol':
-      setAlcoholDetails(prev => prev.filter((_, i) => i !== index)); // Remove the entry
-      break;
-    case 'Smoking':
-      setSmokingDetails(prev => prev.filter((_, i) => i !== index));
-      break;
-    case 'Narguileh':
-      setNarguilehDetails(prev => prev.filter((_, i) => i !== index));
-      break;
-    case 'Caffeine':
-      setCaffeineDetails(prev => prev.filter((_, i) => i !== index));
-      break;
-    case 'Energy Drinks':
-      setEnergyDrinksDetails(prev => prev.filter((_, i) => i !== index));
-      break;
-    case 'Recreational Drugs':
-      setRecreationalDrugsDetails(prev => prev.filter((_, i) => i !== index));
-      break;
-    default:
-      return;
-  }
-
-  // Open the modal with no predefined values (empty state)
-  setEditIndex(null);  // Reset the edit index
-  setModalTitle('Add New Substance');
-  setModalTitle2('Enter Quantity');
-  setIsModalVisible(true); // Open the modal for the user to enter new data
-};
-
-
+  const handleEdit = (index: number) => {
+    switch (modalType) {
+      case 'Alcohol':
+        setAlcoholDetails(prev => prev.filter((_, i) => i !== index));
+        break;
+      case 'Smoking':
+        setSmokingDetails(prev => prev.filter((_, i) => i !== index));
+        break;
+      case 'Narguileh':
+        setNarguilehDetails(prev => prev.filter((_, i) => i !== index));
+        break;
+      case 'Caffeine':
+        setCaffeineDetails(prev => prev.filter((_, i) => i !== index));
+        break;
+      case 'Energy Drinks':
+        setEnergyDrinksDetails(prev => prev.filter((_, i) => i !== index));
+        break;
+      case 'Recreational Drugs':
+        setRecreationalDrugsDetails(prev => prev.filter((_, i) => i !== index));
+        break;
+      default:
+        return;
+    }
+    setEditIndex(null);
+    setModalTitle('Add New Substance');
+    setModalTitle2('Enter Quantity');
+    setIsModalVisible(true);
+  };
 
   const openModal = (title: string, title2: string, type: string, options: string[]) => {
     setModalTitle(title);
@@ -98,64 +94,31 @@ const handleEdit = (index: number) => {
   };
 
   const handleModalSelection = (selectedOption: SubstanceEntry) => {
-  if (selectedOption.substance && selectedOption.quantity > 0 && selectedOption.drinkType) {
-    const formatted = `${selectedOption.substance} | ${selectedOption.quantity} ${selectedOption.drinkType}`;
-    console.log(`Selected ${modalType}: ${formatted}`);  // Log selection details
-    
-    switch (modalType) {
-      case 'Alcohol':
-        setAlcoholDetails(prev => {
-          console.log(`Alcohol details before: ${JSON.stringify(prev)}`);
-          const newDetails = [...prev, formatted];
-          console.log(`Alcohol details after: ${JSON.stringify(newDetails)}`);
-          return newDetails;
-        });
-        break;
-      case 'Smoking':
-        setSmokingDetails(prev => {
-          console.log(`Smoking details before: ${JSON.stringify(prev)}`);
-          const newDetails = [...prev, formatted];
-          console.log(`Smoking details after: ${JSON.stringify(newDetails)}`);
-          return newDetails;
-        });
-        break;
-      case 'Narguileh':
-        setNarguilehDetails(prev => {
-          console.log(`Narguileh details before: ${JSON.stringify(prev)}`);
-          const newDetails = [...prev, formatted];
-          console.log(`Narguileh details after: ${JSON.stringify(newDetails)}`);
-          return newDetails;
-        });
-        break;
-      case 'Caffeine':
-        setCaffeineDetails(prev => {
-          console.log(`Caffeine details before: ${JSON.stringify(prev)}`);
-          const newDetails = [...prev, formatted];
-          console.log(`Caffeine details after: ${JSON.stringify(newDetails)}`);
-          return newDetails;
-        });
-        break;
-      case 'Energy Drinks':
-        setEnergyDrinksDetails(prev => {
-          console.log(`Energy Drinks details before: ${JSON.stringify(prev)}`);
-          const newDetails = [...prev, formatted];
-          console.log(`Energy Drinks details after: ${JSON.stringify(newDetails)}`);
-          return newDetails;
-        });
-        break;
-      case 'Recreational Drugs':
-        setRecreationalDrugsDetails(prev => {
-          console.log(`Recreational Drugs details before: ${JSON.stringify(prev)}`);
-          const newDetails = [...prev, formatted];
-          console.log(`Recreational Drugs details after: ${JSON.stringify(newDetails)}`);
-          return newDetails;
-        });
-        break;
+    if (selectedOption.substance && selectedOption.quantity > 0 && selectedOption.drinkType) {
+      const formatted = `${selectedOption.substance} | ${selectedOption.quantity} ${selectedOption.drinkType}`;
+      switch (modalType) {
+        case 'Alcohol':
+          setAlcoholDetails(prev => [...prev, formatted]);
+          break;
+        case 'Smoking':
+          setSmokingDetails(prev => [...prev, formatted]);
+          break;
+        case 'Narguileh':
+          setNarguilehDetails(prev => [...prev, formatted]);
+          break;
+        case 'Caffeine':
+          setCaffeineDetails(prev => [...prev, formatted]);
+          break;
+        case 'Energy Drinks':
+          setEnergyDrinksDetails(prev => [...prev, formatted]);
+          break;
+        case 'Recreational Drugs':
+          setRecreationalDrugsDetails(prev => [...prev, formatted]);
+          break;
+      }
     }
-  }
-  setIsModalVisible(false);
-};
-
+    setIsModalVisible(false);
+  };
 
   const isButtonEnabled = () => {
     return (
@@ -166,6 +129,90 @@ const handleEdit = (index: number) => {
       energyDrinks !== '' &&
       recreationalDrugs !== ''
     );
+  };
+
+  // --- SUBMIT FUNCTION ---
+  const submitAlcoholAndSubstanceUse = async () => {
+    // Replace with your actual JWT token
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjY1MzRhNzJkMmNhZjkwYzk1MmM3YSIsImlhdCI6MTc0NzQzNzE4MSwiZXhwIjoxNzQ3NDQwNzgxfQ.T37bbs_meMr_7L6GPR2yynKgcABzD77VtHnRuIUJiDg";
+
+    // Parse alcohol details to match backend schema: { alcoholType, quantity, unit }
+    const parseAlcoholDetails = (details: string[]) =>
+      details.map((entry) => {
+        // Example entry: "Vodka | 2 glass"
+        const [type, rest] = entry.split('|').map(s => s.trim());
+        const [quantityStr, unit] = rest ? rest.split(' ') : [null, null];
+        return {
+          alcoholType: type,
+          quantity: Number(quantityStr),
+          unit: unit, // "glass" or "shot"
+        };
+      });
+
+    // You can keep your existing parsing for other substances
+    const parseDetails = (details: string[], typeKey: string) =>
+      details.map((entry) => {
+        const [type, rest] = entry.split('|').map(s => s.trim());
+        const [quantityStr, drinkType] = rest ? rest.split(' ') : [null, null];
+        return {
+          [`${typeKey}Type`]: type,
+          quantity: Number(quantityStr),
+          ...(drinkType ? { drinkType } : {}),
+        };
+      });
+
+    const payload = {
+      log_date: new Date(),
+      alcohol: parseAlcoholDetails(alcoholDetails),
+      smoking: parseDetails(smokingDetails, "smoking"),
+      narguileh: narguilehDetails.length > 0
+        ? { quantity: Number(narguilehDetails[0].split('|')[1]?.trim().split(' ')[0]) }
+        : undefined,
+      Caffeine: {
+        CaffeineType: caffeineDetails.map((entry) => {
+          const [type, rest] = entry.split('|').map(s => s.trim());
+          const [quantityStr] = rest ? rest.split(' ') : [null];
+          return {
+            type,
+            quantity: Number(quantityStr),
+          };
+        }),
+      },
+      energy_drinks: energyDrinksDetails.length > 0
+        ? { quantity: Number(energyDrinksDetails[0].split('|')[1]?.trim().split(' ')[0]) }
+        : undefined,
+      recreational_drug_use: recreationalDrugsDetails.map((entry) => {
+        const [type, rest] = entry.split('|').map(s => s.trim());
+        const [quantityStr] = rest ? rest.split(' ') : [null];
+        return {
+          type,
+          quantity: Number(quantityStr),
+        };
+      }),
+    };
+
+    try {
+      const response = await fetch("http://192.168.18.76:5000/api/alcohol-substance-use", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert("Alcohol and substance use log submitted!");
+        setStepValue('alcoholSubstanceUse', true);
+        setStepNb(stepNb + 1);
+        navigation.navigate('Step7');
+      } else {
+        alert(data.error || "Failed to log alcohol and substance use");
+      }
+    } catch (err) {
+      alert("Network error");
+    }
   };
 
   const renderSubstanceSection = (
@@ -183,12 +230,11 @@ const handleEdit = (index: number) => {
         options={['Yes', 'No']}
         selectedOption={stateValue}
         onSelect={(value) => {
-  setStateValue(value);
-  if (value === 'No') {
-    setDetails([]); // Efface les entrées si "No" est sélectionné
-  }
-}}
-
+          setStateValue(value);
+          if (value === 'No') {
+            setDetails([]);
+          }
+        }}
       />
       <PlusIcon
         onPress={() => {
@@ -212,24 +258,22 @@ const handleEdit = (index: number) => {
       />
 
       {details.length > 0 && (
-  <View style={styles.entryList}>
-    {details.map((entry, index) => (
-      <View key={index} style={styles.entryContainer}>
-        <Text style={styles.entryText}>{entry}</Text>
-        <View style={styles.entryActions}>
-          <TouchableOpacity onPress={() => handleEdit(index)} style={styles.editButton}>
-            <Text style={styles.editText}>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setDetails(prev => prev.filter((_, i) => i !== index))}>
-            <Text style={styles.deleteText}>X</Text>
-          </TouchableOpacity>
+        <View style={styles.entryList}>
+          {details.map((entry, index) => (
+            <View key={index} style={styles.entryContainer}>
+              <Text style={styles.entryText}>{entry}</Text>
+              <View style={styles.entryActions}>
+                <TouchableOpacity onPress={() => handleEdit(index)} style={styles.editButton}>
+                  <Text style={styles.editText}>Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setDetails(prev => prev.filter((_, i) => i !== index))}>
+                  <Text style={styles.deleteText}>X</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
         </View>
-      </View>
-    ))}
-  </View>
-)}
-
-
+      )}
     </View>
   );
 
@@ -258,7 +302,7 @@ const handleEdit = (index: number) => {
         <View style={styles.submitWrapper}>
           <CustomButton
             text="Submit"
-            onPress={() => navigation.navigate('Step7')}
+            onPress={submitAlcoholAndSubstanceUse}
             disabled={!isButtonEnabled()}
           />
         </View>
@@ -389,5 +433,3 @@ const styles = StyleSheet.create({
 });
 
 export default AlcoholAndSubstance;
-
-

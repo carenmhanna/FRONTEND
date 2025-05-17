@@ -6,6 +6,7 @@ import NumberBox from './Numberbox';
 import Liters from './liters';
 import CustomButton from './CustomButton';
 import Meals from './meals';
+import { useStep } from './StepContext';
 
 const FoodandDietS = () => {
     const navigation = useNavigation<AuthNavigationProp>();  
@@ -13,6 +14,7 @@ const FoodandDietS = () => {
     // State to track selected values
     const [mealsPerDay, setMealsPerDay] = useState(0);
     const [litersPerDay, setLitersPerDay] = useState(0);
+    const { setStepValue, setStepNb, stepNb } = useStep(); 
 
     const isButtonDisabled = mealsPerDay === 0 || litersPerDay === 0;
 
@@ -57,6 +59,8 @@ const FoodandDietS = () => {
                     <CustomButton 
                         text="Submit" 
                         onPress={() => {
+                            setStepValue('foodDiet', true);
+                            setStepNb(stepNb + 1);
                             navigation.navigate('Step7');
                             console.log(`Meals: ${mealsPerDay}, Water: ${litersPerDay}`);
                         }} 

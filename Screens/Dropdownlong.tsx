@@ -5,16 +5,34 @@ import { SelectList } from 'react-native-dropdown-select-list';
 interface DropdownProps {
   placeholder?: string;
   options: { key: string; value: string }[];
-  setSelected: React.Dispatch<React.SetStateAction<string>>; // This is used to set the selected value
+  setSelected: (val: string) => void;  // <-- expects value, not key
+  selected?: string;
 }
 
-const Dropdownlong: React.FC<DropdownProps> = ({ placeholder = "Select an option", options, setSelected }) => {
+const Dropdownlong: React.FC<DropdownProps> = ({
+  placeholder = "Select an option",
+  options,
+  setSelected,
+  selected,
+}) => {
+  // Find the key corresponding to the currently selected value (for defaultOption)
+  const defaultOption = selected
+    ? options.find(option => option.value === selected)
+    : undefined;
+
   return (
     <View style={{ width: 200, position: 'relative', zIndex: 1 }}>
       <SelectList
-        setSelected={setSelected} // Pass setSelected to handle selection
+        setSelected={(key: string) => {
+          // Convert key back to value before passing to parent setSelected
+          const selectedOption = options.find(option => option.key === key);
+          if (selectedOption) {
+            setSelected(selectedOption.value);
+          }
+        }}
         data={options}
         placeholder={placeholder}
+        defaultOption={defaultOption}
         boxStyles={{
           borderColor: '#6B2A88',
           width: '100%',
