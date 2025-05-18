@@ -36,10 +36,7 @@ const Signuptwo = () => {
   const navigation = useNavigation<AuthNavigationProp>();
 
   const currentYear = new Date().getFullYear();
-  const daysList = Array.from({ length: 31 }, (_, i) => ({
-    key: (i + 1).toString(),
-    value: (i + 1).toString(),
-  }));
+ 
   const monthsList = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December',
@@ -56,7 +53,6 @@ const Signuptwo = () => {
 
   const isAnyCheckboxChecked =
     focalWithAwareness || focalWithoutAwareness || generalized || nonEpileptic;
-  const isFormValid = day && month && year && gender && isAnyCheckboxChecked;
 
   const selectedTypes = [
     focalWithAwareness && 'Focal With Loss of Awareness',
@@ -84,6 +80,44 @@ const Signuptwo = () => {
       </TouchableOpacity>
     );
   };
+
+  const getValidDays = (month: string, year: string) => {
+  const monthIndex = parseInt(month) - 1; // month is "1"-"12", so subtract 1
+  const y = parseInt(year);
+
+  // Default to 31 days if inputs are not valid yet
+  if (isNaN(monthIndex) || isNaN(y)) {
+    return Array.from({ length: 31 }, (_, i) => ({
+      key: (i + 1).toString(),
+      value: (i + 1).toString(),
+    }));
+  }
+
+  const daysInMonth = new Date(y, monthIndex + 1, 0).getDate();
+
+  return Array.from({ length: daysInMonth }, (_, i) => ({
+    key: (i + 1).toString(),
+    value: (i + 1).toString(),
+  }));
+};
+
+const daysList = getValidDays(month, year);
+
+const isValidDate = (year: string, month: string, day: string) => {
+  const y = Number(year);
+  const m = Number(month); // already 1-based
+  const d = Number(day);
+
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return false;
+
+  const date = new Date(y, m - 1, d);
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+};
+
+const isFormValid = day && month && year && gender && isAnyCheckboxChecked && isValidDate(year, month, day);
+
+
+
 
   return (
     <KeyboardAvoidingView

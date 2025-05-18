@@ -10,66 +10,149 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { AuthNavigationProp } from '../types';
-import RoundRadioButtons from './RoundRadioButtons';
+import SleepQualitySelector from './SleepQualitySelector';
+import SleepModal from './SleepModal'; // Make sure this returns start & end times
+import { useStep } from './StepContext';
 
 const SleepAndFatigue = () => {
   const navigation = useNavigation<AuthNavigationProp>();
-  const [stateValue, setStateValue] = useState<string | null>(null);
-  const [details, setDetails] = useState<any[]>([]);
+  const { setStepValue, stepNb, setStepNb } = useStep();
 
-  const isAlcoholYes = stateValue === 'Yes';
+  const [sleepQuality, setSleepQuality] = useState<number>(0);
+  const [fatigue, setFatigue] = useState<number>(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [naps, setNaps] = useState<{ start: string; end: string }[]>([]);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+
+  const handleDelete = (index: number) => {
+    console.log(
+      `Deleting nap ${index + 1}:`,
+      naps[index],
+      'Current Sleep Quality:',
+      sleepQuality
+    );
+    setNaps(naps.filter((_, i) => i !== index));
+  };
+
+  const handleEdit = (index: number) => {
+    console.log(
+      `Editing nap ${index + 1}:`,
+      naps[index],
+      'Current Sleep Quality:',
+      sleepQuality
+    );
+    setEditIndex(index);
+    setModalVisible(true);
+  };
+
+  const handleModalSubmit = (nap: { start: string; end: string }) => {
+    if (editIndex !== null) {
+      const updated = [...naps];
+      updated[editIndex] = nap;
+      setNaps(updated);
+      setEditIndex(null);
+    } else {
+      setNaps([...naps, nap]);
+    }
+    setModalVisible(false);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        {/* Top Bar */}
         <View style={styles.topBar}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={require('./Loginpics/vector.png')} style={styles.image} />
           </TouchableOpacity>
           <View>
-            <Text style={styles.purpleText}>Alcohol</Text>
-            <Text style={styles.purpleText}>& Substance use</Text>
+            <Text style={styles.purpleText}>Sleep and Fatigue</Text>
           </View>
         </View>
 
-        {/* Alcohol Section */}
         <View style={styles.middlebar}>
           <View style={styles.item}>
-            <Text style={styles.blackText}>Alcohol</Text>
-            <RoundRadioButtons
-              options={['Yes', 'No']}
-              selectedOption={stateValue ?? ''}
-              onSelect={(value) => {
-                setStateValue(value);
-                if (value === 'No') {
-                  setDetails([]);
-                }
+            <Text style={styles.blackText}>Sleep Schedule</Text>
+
+            <View style={{ flexDirection: 'row', gap: 20 }}>
+              <TouchableOpacity style={styles.purplebox}>
+                <Text style={styles.purpletextt}>Access Google Fit</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.purplebox}>
+                <Text style={styles.purpletextt}>Input Manually</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.item}>
+            <Text style={styles.blackText}>Sleep Quality</Text>
+            <SleepQualitySelector
+              value={sleepQuality}
+              onChange={setSleepQuality}
+              getEmoji={(level) => {
+                const emojis = ['🥱', '😴', '😓', '😟', '😐', '🙂', '😊', '😌', '😍', '🌟'];
+                return emojis[level - 1];
               }}
             />
+          </View>
 
-            {/* Plus Button - only active if "Yes" is selected */}
-            <TouchableOpacity
-              disabled={!isAlcoholYes}
-              style={[
-                styles.shadowButton,
-                !isAlcoholYes && styles.disabledButton,
-              ]}
-              onPress={() => {
-                // Your logic for opening AlcoholModal, etc.
-                console.log('Open Alcohol Modal');
+          <View style={styles.item}>
+            <Text style={styles.blackText}>Daytime fatigue</Text>
+            <SleepQualitySelector
+              value={fatigue}
+              onChange={setFatigue}
+              getEmoji={(level) => {
+                const emojis = ['🌟', '😍', '😌', '😊', '🙂', '😐', '😟', '😓', '😴', '🥱'];
+                return emojis[level - 1];
               }}
-            >
-              <Image
-                source={require('./AlcoholPics/PlusButton.png')}
-                style={[
-                  styles.plusIcon,
-                  !isAlcoholYes && { opacity: 0.4 },
-                ]}
-              />
+            />
+          </View>
+
+          <View style={styles.item}>
+            <Text style={styles.blackText}>Nap</Text>
+            <TouchableOpacity onPress={() => { setModalVisible(true); setEditIndex(null); }}>
+              <Image source={require('./AlcoholPics/PlusButton.png')} />
             </TouchableOpacity>
+
+            <View style={{ width: '90%', gap: 10 }}>
+              {naps.map((nap, index) => (
+                <View key={index} style={styles.napBox}>
+                  <Text style={styles.napText}>Nap {index + 1} | {nap.start} - {nap.end}</Text>
+                  <View style={styles.napButtons}>
+                    <TouchableOpacity onPress={() => handleEdit(index)}>
+                      <Text style={styles.editText}>Edit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDelete(index)}>
+                      <Text style={styles.deleteText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
           </View>
         </View>
+
+        <View style={{ alignItems: 'center', marginVertical: 30 }}>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={() => {
+              setStepValue('sleepFatigue', true);  // <-- set context here
+              navigation.navigate('Step7');
+              setStepNb(stepNb + 1);
+            }}
+          >
+            <Text style={styles.submitButtonText}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+
+        {modalVisible && (
+          <SleepModal
+            visible={modalVisible}
+            onClose={() => { setModalVisible(false); setEditIndex(null); }}
+            onSubmit={handleModalSubmit}
+            defaultData={editIndex !== null ? naps[editIndex] : null}
+          />
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -107,7 +190,7 @@ const styles = StyleSheet.create({
   },
   middlebar: {
     flexDirection: 'column',
-    gap: 10,
+    gap: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -116,26 +199,60 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
   },
-  shadowButton: {
-    alignItems: 'center',
-    backgroundColor: 'white',
-    borderRadius: 12,
+  purplebox: {
+    backgroundColor: '#EABAFF',
+    padding: 10,
+    borderRadius: 30,
+  },
+  purpletextt: {
+    color: '#6B2A88',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  napBox: {
+    backgroundColor: '#EABAFF',
+    borderRadius: 10,
     padding: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  disabledButton: {
-    shadowColor: 'transparent',
-    backgroundColor: '#f2f2f2',
+  submitButton: {
+    backgroundColor: '#6B2A88',
+    paddingVertical: 12,
+    paddingHorizontal: 50,
+    borderRadius: 30,
   },
-  plusIcon: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
+  submitButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 18,
+  },
+  napText: {
+    color: '#6B2A88',
+    fontWeight: '500',
+  },
+  napButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  editText: {
+    textDecorationLine: 'underline',
+    color: '#6B2A88',
+    fontWeight: '600',
+  },
+  deleteText: {
+    color: '#6B2A88',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 
