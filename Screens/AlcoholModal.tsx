@@ -11,11 +11,17 @@ import Dropdownlong from './Dropdownlong';
 import NumberBox from './Numberbox';
 import Glasses from './glasses';
 import Shots from './Shots';
+import Qttyday from './qttyday';
 
-type SubstanceEntry = {
+type SubstanceEntryWithDrinkType = {
   substance: string;
   quantity: number;
   drinkType: string;
+};
+
+type SubstanceEntryWithoutDrinkType = {
+  substance: string;
+  quantity: number;
 };
 
 type Props = {
@@ -23,11 +29,11 @@ type Props = {
   title: string;
   title2: string;
   onClose: () => void;
-  onSelect: (entry: SubstanceEntry) => void;
+  onSelect: (entry: SubstanceEntryWithDrinkType | SubstanceEntryWithoutDrinkType) => void;
   options: { key: string; value: string }[];
   placeholder: string;
   showType?: boolean;
-  prefill?: SubstanceEntry | null;
+  prefill?: SubstanceEntryWithDrinkType | SubstanceEntryWithoutDrinkType | null;
 };
 
 const AlcoholModal = ({
@@ -43,30 +49,31 @@ const AlcoholModal = ({
 }: Props) => {
   const [substance, setSubstance] = useState('');
   const [quantity, setQuantity] = useState(0);
-  const [drinkType, setDrinkType] = useState('glass');
+  const [drinkType, setDrinkType] = useState('glass'); // Only used when showType === true
 
   useEffect(() => {
     if (prefill) {
       setSubstance(prefill.substance);
       setQuantity(prefill.quantity);
-      setDrinkType(prefill.drinkType);
+      if (showType && 'drinkType' in prefill) {
+        setDrinkType(prefill.drinkType);
+      } else {
+        setDrinkType('glass');
+      }
     } else {
       setSubstance('');
       setQuantity(0);
       setDrinkType('glass');
     }
-  }, [prefill]);
-
-  useEffect(() => {
-    if (!showType) {
-      setSubstance('Narguileh');
-      setDrinkType('session');
-    }
-  }, [showType]);
+  }, [prefill, showType]);
 
   const handleConfirm = () => {
     if (quantity > 0 && substance) {
-      onSelect({ substance, quantity, drinkType });
+      if (showType) {
+        onSelect({ substance, quantity, drinkType });
+      } else {
+        onSelect({ substance, quantity });
+      }
     }
     setSubstance('');
     setQuantity(0);
@@ -74,12 +81,12 @@ const AlcoholModal = ({
     onClose();
   };
 
-  const handleSelectDrinkType = (type: string) => {
-    setDrinkType(type.toLowerCase());
-  };
-
   const handleSaveQuantity = (newQuantity: number) => {
     setQuantity(newQuantity);
+  };
+
+  const handleSelectDrinkType = (type: string) => {
+    setDrinkType(type.toLowerCase());
   };
 
   return (
@@ -88,30 +95,29 @@ const AlcoholModal = ({
         <View style={styles.container}>
           <Text style={styles.title}>{title}</Text>
 
-          {showType && (
+       
             <Dropdownlong
               options={options}
               placeholder={placeholder}
               setSelected={setSubstance}
               selected={substance}
             />
-          )}
 
           <Text style={styles.title}>{title2}</Text>
           <View style={styles.boxContainer}>
-  <NumberBox option={substance} onSave={handleSaveQuantity} initialValue={quantity} />
-  {showType && (
-    <View style={{ flexDirection: 'column', gap: 5 }}>
-      <TouchableOpacity onPress={() => handleSelectDrinkType('glass')}>
-        <Glasses />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => handleSelectDrinkType('shot')}>
-        <Shots />
-      </TouchableOpacity>
-    </View>
-  )}
-</View>
-
+            <NumberBox option={substance} onSave={handleSaveQuantity} initialValue={quantity} />
+            {showType ? (
+              <View style={{ flexDirection: 'column', gap: 5 }}>
+                <TouchableOpacity onPress={() => handleSelectDrinkType('glass')}>
+                  <Glasses />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleSelectDrinkType('shot')}>
+                  <Shots />
+                </TouchableOpacity>
+              </View>
+            ):
+            <Qttyday/>}
+          </View>
 
           <TouchableOpacity onPress={handleConfirm} style={styles.closeButton}>
             <Image source={require('./CheckIcon.png')} />

@@ -30,6 +30,7 @@ import EditProfileScreen from './Screens/EditProfileScreen';
 import MyProfileScreen from './Screens/MyProfileScreen';
 import SettingsScreen from './Screens/SettingsScreen';
 import ProfileScreen from './Screens/ProfileScreen';
+import SleepAndFatigue from './Screens/SleepAndFatigue';
 const Stack = createStackNavigator();
 
 Notifications.setNotificationHandler({
@@ -81,14 +82,12 @@ export default function App() {
       <StepProvider>
         <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name="LoginScreen" component={LoginScreen} />
-
-                                    <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
-
-
-                        <Stack.Screen name="Login1" component={Login1} />
+                   <Stack.Screen name="AlcoholAndSubstance" component={AlcoholAndSubstance} />
+            <Stack.Screen name="Login1" component={Login1} />
+            <Stack.Screen name="SleepAndFatigue" component={SleepAndFatigue} />
+            <Stack.Screen name="LoginScreen" component={LoginScreen} />
+            <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
             <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
-            <Stack.Screen name="AlcoholAndSubstance" component={AlcoholAndSubstance} />
             <Stack.Screen name="Step7" component={Step7} />
             <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
             <Stack.Screen name="MyProfileScreen" component={MyProfileScreen} />

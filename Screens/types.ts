@@ -11,6 +11,7 @@ export type RootStackParamList = {
   NoSeizure: undefined;
   ProfileScreen: undefined;
   MyProfileScreen: undefined;
+  SleepAndFatigue:undefined;
   SettingsScreen: undefined;
   EditProfileScreen: undefined;
   // Add any other screens to your navigation stack here as needed

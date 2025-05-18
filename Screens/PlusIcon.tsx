@@ -13,7 +13,7 @@ const PlusIcon = ({ onPress, disabled }: Props) => {
       style={[styles.icon, disabled && styles.disabled]}  // Apply the disabled style conditionally
       disabled={disabled}  // Disable the TouchableOpacity when the disabled prop is true
     >
-      <Image source={require('./AlcoholAndSubstancepicd/PlusButton.png')} />
+      <Image source={require('./AlcoholPics/PlusButton.png')} />
     </TouchableOpacity>
 
     

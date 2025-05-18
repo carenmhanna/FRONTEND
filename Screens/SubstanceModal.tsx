@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, Image, TextInput } from 'react-native';
 import NumberBox from './Numberbox';
-import Glasses from './glasses';
-import Shots from './Shots';
+import Qttyday from './qttyday';
 
 type SubstanceEntry = {
   substance: string;
   quantity: number;
-  drinkType: string;
 };
 
 type Props = {
@@ -17,7 +15,7 @@ type Props = {
   onClose: () => void;
   onSelect: (entry: SubstanceEntry) => void;
   placeholder: string;
-  showType?: boolean;
+prefilled?: SubstanceEntry | null
 };
 
 const SubstanceModal = ({
@@ -27,31 +25,25 @@ const SubstanceModal = ({
   onClose,
   onSelect,
   placeholder,
-  showType = true,
+  prefilled,
 }: Props) => {
   const [substance, setSubstance] = useState('');
   const [quantity, setQuantity] = useState(0);
-  const [drinkType, setDrinkType] = useState('glass');
 
   useEffect(() => {
-    if (!showType) {
-      setDrinkType('session');
+    if (prefilled) {
+      setSubstance(prefilled.substance);
+      setQuantity(prefilled.quantity);
     }
-  }, [showType]);
+  }, [prefilled, visible]); // reset state when modal opens
 
   const handleConfirm = () => {
     if (quantity > 0 && substance.trim() !== '') {
-      onSelect({ substance, quantity, drinkType });
+      onSelect({ substance, quantity });
     }
-    // Reset state
     setSubstance('');
     setQuantity(0);
-    setDrinkType('glass');
     onClose();
-  };
-
-  const handleSelectDrinkType = (type: string) => {
-    setDrinkType(type.toLowerCase());
   };
 
   const handleSaveQuantity = (newQuantity: number) => {
@@ -63,30 +55,21 @@ const SubstanceModal = ({
       <View style={styles.overlay}>
         <View style={styles.container}>
           <Text style={styles.title}>{title}</Text>
-
-          {showType && (
-            <TextInput
-              value={substance}
-              onChangeText={setSubstance}
-              placeholder={placeholder}
-              style={styles.input}
-            />
-          )}
+          <TextInput
+            value={substance}
+            onChangeText={setSubstance}
+            placeholder={placeholder}
+            style={styles.input}
+          />
 
           <Text style={styles.title}>{title2}</Text>
           <View style={styles.boxContainer}>
-            <NumberBox option={substance} onSave={handleSaveQuantity} />
-
-            {showType && (
-              <View style={{ flexDirection: 'column', gap: 5 }}>
-                <TouchableOpacity onPress={() => handleSelectDrinkType('glass')}>
-                  <Glasses />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleSelectDrinkType('shot')}>
-                  <Shots />
-                </TouchableOpacity>
-              </View>
-            )}
+            <NumberBox
+              option={substance}
+              onSave={handleSaveQuantity}
+              initialValue={quantity}
+            />
+            <Qttyday />
           </View>
 
           <TouchableOpacity onPress={handleConfirm} style={styles.closeButton}>

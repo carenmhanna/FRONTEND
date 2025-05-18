@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import NumberBox from './Numberbox';
-import Glasses from './glasses';
-import Shots from './Shots';
 import Dropdownlong from './Dropdownlong';  // Include Dropdownlong if necessary
+import Qttyday from './qttyday';
 
 type SubstanceEntry = {
   substance: string;
@@ -81,18 +80,10 @@ const NarguilehModal = ({
           <View style={styles.boxContainer}>
             {/* Pass quantity and onSave props to NumberBox */}
             <NumberBox option={substance} onSave={handleSaveQuantity} />
+            <Qttyday/>
 
             {/* Show drink type options only if showType is true */}
-            {showType && (
-              <View style={{ flexDirection: 'column', gap: 5 }}>
-                <TouchableOpacity onPress={() => handleSelectDrinkType('glass')}>
-                  <Glasses />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleSelectDrinkType('shot')}>
-                  <Shots />
-                </TouchableOpacity>
-              </View>
-            )}
+            
           </View>
 
           <TouchableOpacity onPress={handleConfirm} style={styles.closeButton}>

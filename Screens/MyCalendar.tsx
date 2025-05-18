@@ -19,7 +19,7 @@ const MyCalendar: React.FC<MyCalendarProps> = ({ onDateSelect }) => {
     onDateSelect(day.dateString);
   };
 
-  const weekDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  const weekDays = [ 'SUN','MON','TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
   return (
     <View style={styles.container}>

@@ -18,10 +18,11 @@ import NarguilehModal from './NarguilehModal';
 import SubstanceModal from './SubstanceModal';
 import { useStep } from './StepContext';
 
+
 type SubstanceEntry = {
   substance: string;
   quantity: number;
-  drinkType: string; // For alcohol, this will be the unit ("glass" or "shot")
+  drinkType?: string;
 };
 
 const AlcoholAndSubstance = () => {
@@ -32,58 +33,72 @@ const AlcoholAndSubstance = () => {
   const [narguileh, setNarguileh] = useState('');
   const [caffeine, setCaffeine] = useState('');
   const [energyDrinks, setEnergyDrinks] = useState('');
-  const [recreationalDrugs, setRecreationalDrugs] = useState('');
-  const { setStepValue, setStepNb, stepNb } = useStep(); 
+  const [recreationalsubs, setRecreationalsubs] = useState('');
 
   const [alcoholDetails, setAlcoholDetails] = useState<string[]>([]);
   const [smokingDetails, setSmokingDetails] = useState<string[]>([]);
   const [narguilehDetails, setNarguilehDetails] = useState<string[]>([]);
   const [caffeineDetails, setCaffeineDetails] = useState<string[]>([]);
   const [energyDrinksDetails, setEnergyDrinksDetails] = useState<string[]>([]);
-  const [recreationalDrugsDetails, setRecreationalDrugsDetails] = useState<string[]>([]);
+  const [recreationalsubsDetails, setRecreationalsubsDetails] = useState<string[]>([]);
+  const { stepNb, setStepNb, setStepValue } = useStep();
+
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalTitle2, setModalTitle2] = useState('');
   const [modalType, setModalType] = useState('');
   const [modalOptions, setModalOptions] = useState<{ key: string; value: string }[]>([]);
+  const [modalInitialValues, setModalInitialValues] = useState<SubstanceEntry | null>(null);
 
-  const alcoholOptions = ['Wine', 'Beer', 'Vodka', 'Whiskey', 'Arak'];
-  const nicotineOptions = ['Cigarettes', 'Vape', 'Nicotine Pouches'];
-  const caffeineOptions = ['Espresso', 'Americano', 'Latte', 'Turkish Coffee'];
-  const energyDrinkOptions = ['Red Bull', 'Monster', 'Other'];
+
+  const alcoholOptions = ["Vodka", "Beer", "Whiskey", "Gin", "Wine", "Arak", "Other"];
+  const nicotineOptions = ["Icos", "Vape", "Cigar", "Cigarette", "Other"];
+  const caffeineOptions = ["Coffee", "Tea",'Soft Drinks'];
+  const energyDrinkOptions = ['Red Bull', 'Monster', 'XXL','Dark Blue'];
   const narguilehOptions = ['Grape Mint', 'Double Apple', 'Watermelon', 'Other'];
-  const recreationalDrugOptions = ['Cannabis', 'MDMA', 'LSD', 'Cocaine', 'Other'];
-  const [editIndex, setEditIndex] = useState<number | null>(null);
+  const recreationalsubsOptions = ['free text'];
+  const [editIndex, setEditIndex] = useState<number | null>(null); // Track which index is being edited
 
-  const handleEdit = (index: number) => {
-    switch (modalType) {
-      case 'Alcohol':
-        setAlcoholDetails(prev => prev.filter((_, i) => i !== index));
-        break;
-      case 'Smoking':
-        setSmokingDetails(prev => prev.filter((_, i) => i !== index));
-        break;
-      case 'Narguileh':
-        setNarguilehDetails(prev => prev.filter((_, i) => i !== index));
-        break;
-      case 'Caffeine':
-        setCaffeineDetails(prev => prev.filter((_, i) => i !== index));
-        break;
-      case 'Energy Drinks':
-        setEnergyDrinksDetails(prev => prev.filter((_, i) => i !== index));
-        break;
-      case 'Recreational Drugs':
-        setRecreationalDrugsDetails(prev => prev.filter((_, i) => i !== index));
-        break;
-      default:
-        return;
-    }
-    setEditIndex(null);
-    setModalTitle('Add New Substance');
-    setModalTitle2('Enter Quantity');
-    setIsModalVisible(true);
+
+const handleEdit = (index: number, entry: string) => {
+  const [substance, quantityStr] = entry.split(' | ');
+  const quantityParts = quantityStr?.split(' ') || [];
+  const quantity = parseInt(quantityParts[0], 10);
+  const drinkType = quantityParts.slice(1).join(' ');
+
+  setEditIndex(index); // <-- set index of item being edited
+  setModalTitle('Edit Substance');
+  setModalTitle2('Edit Quantity');
+  setModalType(modalType);
+
+  const optionsMap: Record<string, string[]> = {
+    'Alcohol': alcoholOptions,
+    'Smoking': nicotineOptions,
+    'Narguileh': narguilehOptions,
+    'Caffeine': caffeineOptions,
+    'Energy Drinks': energyDrinkOptions,
+    'Recreational subs': recreationalsubsOptions,
   };
+
+  setModalOptions(optionsMap[modalType].map(option => ({ key: option, value: option })));
+
+  // Pass initial values to modal via state
+  setModalInitialValues({
+    substance,
+    quantity,
+    drinkType,
+  });
+
+  setIsModalVisible(true);
+};
+
+const handleSubmit = () => {
+    setStepValue('alcoholSubstanceUse', true); // set the step as completed
+    setStepNb(stepNb + 1);                     // increment step number
+    navigation.navigate('Step7');               // navigate forward
+  };
+
 
   const openModal = (title: string, title2: string, type: string, options: string[]) => {
     setModalTitle(title);
@@ -93,32 +108,58 @@ const AlcoholAndSubstance = () => {
     setIsModalVisible(true);
   };
 
-  const handleModalSelection = (selectedOption: SubstanceEntry) => {
+ const handleModalSelection = (selectedOption: SubstanceEntry) => {
+  let formatted = '';
+
+  if (modalType === 'Alcohol') {
     if (selectedOption.substance && selectedOption.quantity > 0 && selectedOption.drinkType) {
-      const formatted = `${selectedOption.substance} | ${selectedOption.quantity} ${selectedOption.drinkType}`;
-      switch (modalType) {
-        case 'Alcohol':
-          setAlcoholDetails(prev => [...prev, formatted]);
-          break;
-        case 'Smoking':
-          setSmokingDetails(prev => [...prev, formatted]);
-          break;
-        case 'Narguileh':
-          setNarguilehDetails(prev => [...prev, formatted]);
-          break;
-        case 'Caffeine':
-          setCaffeineDetails(prev => [...prev, formatted]);
-          break;
-        case 'Energy Drinks':
-          setEnergyDrinksDetails(prev => [...prev, formatted]);
-          break;
-        case 'Recreational Drugs':
-          setRecreationalDrugsDetails(prev => [...prev, formatted]);
-          break;
-      }
+      formatted = `${selectedOption.substance} | ${selectedOption.quantity} ${selectedOption.drinkType}`;
     }
-    setIsModalVisible(false);
+  } else {
+    if (selectedOption.substance && selectedOption.quantity > 0) {
+      formatted = `${selectedOption.substance} | ${selectedOption.quantity}`;
+    }
+  }
+
+  if (!formatted) return;
+
+  const updateDetails = (setFn: typeof setAlcoholDetails, prev: string[]) => {
+    if (editIndex !== null) {
+      const updated = [...prev];
+      updated[editIndex] = formatted;
+      setFn(updated);
+    } else {
+      setFn([...prev, formatted]);
+    }
   };
+
+  switch (modalType) {
+    case 'Alcohol':
+      updateDetails(setAlcoholDetails, alcoholDetails);
+      break;
+    case 'Smoking':
+      updateDetails(setSmokingDetails, smokingDetails);
+      break;
+    case 'Narguileh':
+      updateDetails(setNarguilehDetails, narguilehDetails);
+      break;
+    case 'Caffeine':
+      updateDetails(setCaffeineDetails, caffeineDetails);
+      break;
+    case 'Energy Drinks':
+      updateDetails(setEnergyDrinksDetails, energyDrinksDetails);
+      break;
+    case 'Recreational subs':
+      updateDetails(setRecreationalsubsDetails, recreationalsubsDetails);
+      break;
+  }
+
+  setIsModalVisible(false);
+  setEditIndex(null);
+  setModalInitialValues(null);
+};
+
+
 
   const isButtonEnabled = () => {
     return (
@@ -127,92 +168,8 @@ const AlcoholAndSubstance = () => {
       narguileh !== '' &&
       caffeine !== '' &&
       energyDrinks !== '' &&
-      recreationalDrugs !== ''
+      recreationalsubs !== ''
     );
-  };
-
-  // --- SUBMIT FUNCTION ---
-  const submitAlcoholAndSubstanceUse = async () => {
-    // Replace with your actual JWT token
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjY1MzRhNzJkMmNhZjkwYzk1MmM3YSIsImlhdCI6MTc0NzQzNzE4MSwiZXhwIjoxNzQ3NDQwNzgxfQ.T37bbs_meMr_7L6GPR2yynKgcABzD77VtHnRuIUJiDg";
-
-    // Parse alcohol details to match backend schema: { alcoholType, quantity, unit }
-    const parseAlcoholDetails = (details: string[]) =>
-      details.map((entry) => {
-        // Example entry: "Vodka | 2 glass"
-        const [type, rest] = entry.split('|').map(s => s.trim());
-        const [quantityStr, unit] = rest ? rest.split(' ') : [null, null];
-        return {
-          alcoholType: type,
-          quantity: Number(quantityStr),
-          unit: unit, // "glass" or "shot"
-        };
-      });
-
-    // You can keep your existing parsing for other substances
-    const parseDetails = (details: string[], typeKey: string) =>
-      details.map((entry) => {
-        const [type, rest] = entry.split('|').map(s => s.trim());
-        const [quantityStr, drinkType] = rest ? rest.split(' ') : [null, null];
-        return {
-          [`${typeKey}Type`]: type,
-          quantity: Number(quantityStr),
-          ...(drinkType ? { drinkType } : {}),
-        };
-      });
-
-    const payload = {
-      log_date: new Date(),
-      alcohol: parseAlcoholDetails(alcoholDetails),
-      smoking: parseDetails(smokingDetails, "smoking"),
-      narguileh: narguilehDetails.length > 0
-        ? { quantity: Number(narguilehDetails[0].split('|')[1]?.trim().split(' ')[0]) }
-        : undefined,
-      Caffeine: {
-        CaffeineType: caffeineDetails.map((entry) => {
-          const [type, rest] = entry.split('|').map(s => s.trim());
-          const [quantityStr] = rest ? rest.split(' ') : [null];
-          return {
-            type,
-            quantity: Number(quantityStr),
-          };
-        }),
-      },
-      energy_drinks: energyDrinksDetails.length > 0
-        ? { quantity: Number(energyDrinksDetails[0].split('|')[1]?.trim().split(' ')[0]) }
-        : undefined,
-      recreational_drug_use: recreationalDrugsDetails.map((entry) => {
-        const [type, rest] = entry.split('|').map(s => s.trim());
-        const [quantityStr] = rest ? rest.split(' ') : [null];
-        return {
-          type,
-          quantity: Number(quantityStr),
-        };
-      }),
-    };
-
-    try {
-      const response = await fetch("http://192.168.18.76:5000/api/alcohol-substance-use", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        alert("Alcohol and substance use log submitted!");
-        setStepValue('alcoholSubstanceUse', true);
-        setStepNb(stepNb + 1);
-        navigation.navigate('Step7');
-      } else {
-        alert(data.error || "Failed to log alcohol and substance use");
-      }
-    } catch (err) {
-      alert("Network error");
-    }
   };
 
   const renderSubstanceSection = (
@@ -229,20 +186,15 @@ const AlcoholAndSubstance = () => {
       <RoundRadioButtons
         options={['Yes', 'No']}
         selectedOption={stateValue}
-        onSelect={(value) => {
-          setStateValue(value);
-          if (value === 'No') {
-            setDetails([]);
-          }
-        }}
+        onSelect={setStateValue}
       />
       <PlusIcon
         onPress={() => {
-          if (modalTypeKey === 'Recreational Drugs') {
-            setModalType('Recreational Drugs');
+          if (modalTypeKey === 'Recreational subs') {
+            setModalType('Recreational subs');
             setModalTitle('Substance Type');
             setModalTitle2('Enter Substance Details');
-            setModalOptions(recreationalDrugOptions.map(option => ({ key: option, value: option })));
+            setModalOptions(recreationalsubsOptions.map(option => ({ key: option, value: option })));
             setIsModalVisible(true);
           } else if (modalTypeKey === 'Narguileh') {
             setModalType('Narguileh');
@@ -258,22 +210,25 @@ const AlcoholAndSubstance = () => {
       />
 
       {details.length > 0 && (
-        <View style={styles.entryList}>
-          {details.map((entry, index) => (
-            <View key={index} style={styles.entryContainer}>
-              <Text style={styles.entryText}>{entry}</Text>
-              <View style={styles.entryActions}>
-                <TouchableOpacity onPress={() => handleEdit(index)} style={styles.editButton}>
-                  <Text style={styles.editText}>Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setDetails(prev => prev.filter((_, i) => i !== index))}>
-                  <Text style={styles.deleteText}>X</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
+  <View style={styles.entryList}>
+    {details.map((entry, index) => (
+      <View key={index} style={styles.entryContainer}>
+        <Text style={styles.entryText}>{entry}</Text>
+        <View style={styles.entryActions}>
+          <TouchableOpacity onPress={() => handleEdit(index, entry)} style={styles.editButton}>
+  <Text style={styles.editText}>Edit</Text>
+</TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setDetails(prev => prev.filter((_, i) => i !== index))}>
+            <Text style={styles.deleteText}>X</Text>
+          </TouchableOpacity>
         </View>
-      )}
+      </View>
+    ))}
+  </View>
+)}
+
+
     </View>
   );
 
@@ -296,54 +251,56 @@ const AlcoholAndSubstance = () => {
           {renderSubstanceSection('Narguileh', narguileh, setNarguileh, narguilehDetails, setNarguilehDetails, 'Narguileh', narguilehOptions)}
           {renderSubstanceSection('Caffeine', caffeine, setCaffeine, caffeineDetails, setCaffeineDetails, 'Caffeine', caffeineOptions)}
           {renderSubstanceSection('Energy Drinks', energyDrinks, setEnergyDrinks, energyDrinksDetails, setEnergyDrinksDetails, 'Energy Drinks', energyDrinkOptions)}
-          {renderSubstanceSection('Recreational Substance Use', recreationalDrugs, setRecreationalDrugs, recreationalDrugsDetails, setRecreationalDrugsDetails, 'Recreational Drugs', recreationalDrugOptions)}
+          {renderSubstanceSection('Recreational Substance Use', recreationalsubs, setRecreationalsubs, recreationalsubsDetails, setRecreationalsubsDetails, 'Recreational subs', recreationalsubsOptions)}
         </View>
 
         <View style={styles.submitWrapper}>
           <CustomButton
-            text="Submit"
-            onPress={submitAlcoholAndSubstanceUse}
-            disabled={!isButtonEnabled()}
-          />
+      text="Submit"
+      onPress={handleSubmit}         // use new handler here
+      disabled={!isButtonEnabled()}
+    />
         </View>
       </ScrollView>
 
-      {/* Shared AlcoholModal (used for multiple types) */}
-      <AlcoholModal
-        visible={
-          isModalVisible &&
-          modalType !== 'Narguileh' &&
-          modalType !== 'Recreational Drugs'
-        }
-        title={modalTitle}
-        title2={modalTitle2}
-        onClose={() => setIsModalVisible(false)}
-        onSelect={handleModalSelection}
-        options={modalOptions}
-        placeholder="Select type"
-        showType={true}
-      />
+     <AlcoholModal
+  visible={
+    isModalVisible &&
+    modalType !== 'Narguileh' &&
+    modalType !== 'Recreational subs'
+  }
+  title={modalTitle}
+  title2={modalTitle2}
+  onClose={() => setIsModalVisible(false)}
+  onSelect={handleModalSelection}
+  options={modalOptions}
+  placeholder="Select type"
+  showType={modalType === 'Alcohol'}
+  prefill={modalInitialValues}  // <--- pass here
+/>
 
-      {/* Narguileh Modal */}
-      <NarguilehModal
-        visible={isModalVisible && modalType === 'Narguileh'}
-        title={modalTitle}
-        title2={modalTitle2}
-        onClose={() => setIsModalVisible(false)}
-        onSelect={handleModalSelection}
-        showType={false}
-      />
+<NarguilehModal
+  visible={isModalVisible && modalType === 'Narguileh'}
+  title={modalTitle}
+  title2={modalTitle2}
+  onClose={() => setIsModalVisible(false)}
+  onSelect={handleModalSelection}
+  showType={false}
+/>
 
-      {/* Recreational Drugs Modal */}
-      <SubstanceModal
-        visible={isModalVisible && modalType === 'Recreational Drugs'}
-        title={modalTitle}
-        title2={modalTitle2}
-        onClose={() => setIsModalVisible(false)}
-        onSelect={handleModalSelection}
-        placeholder="Enter substance"
-        showType={true}
-      />
+<SubstanceModal
+  visible={isModalVisible && modalType === 'Recreational subs'}
+  title={modalTitle}
+  title2={modalTitle2}
+  onClose={() => setIsModalVisible(false)}
+  onSelect={handleModalSelection}
+  placeholder="Enter substance"
+  prefilled={modalInitialValues} // use same prop name as AlcoholModal
+/>
+
+
+
+
     </SafeAreaView>
   );
 };
@@ -384,7 +341,7 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     flexDirection: 'column',
-    gap: 50,
+    gap: 80,
   },
   submitWrapper: {
     width: '70%',
@@ -433,3 +390,5 @@ const styles = StyleSheet.create({
 });
 
 export default AlcoholAndSubstance;
+
+
