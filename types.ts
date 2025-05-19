@@ -32,6 +32,7 @@ Signup3: {
   SettingsScreen:undefined;
   EditProfileScreen:undefined;
   MyProfileScreen:undefined;
+  SleepDataScreen:undefined;
   // Add any other screens to your navigation stack here as needed
 };
 

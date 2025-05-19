@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/epilep.png",
         "backgroundColor": "#6B2A888C"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.EpilepMe"
     },
     "web": {
       "favicon": "./assets/epilep.png"

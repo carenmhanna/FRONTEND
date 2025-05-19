@@ -31,6 +31,7 @@ import MyProfileScreen from './Screens/MyProfileScreen';
 import SettingsScreen from './Screens/SettingsScreen';
 import ProfileScreen from './Screens/ProfileScreen';
 import SleepAndFatigue from './Screens/SleepAndFatigue';
+import SleepDataScreen from './SleepDataScreen';
 const Stack = createStackNavigator();
 
 Notifications.setNotificationHandler({
@@ -83,6 +84,7 @@ export default function App() {
         <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="SleepAndFatigue" component={SleepAndFatigue} />
+            <Stack.Screen name="SleepDataScreen" component={SleepDataScreen} />
             <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
             <Stack.Screen name="Login1" component={Login1} />
             <Stack.Screen name="AlcoholAndSubstance" component={AlcoholAndSubstance} />
